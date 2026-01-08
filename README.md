@@ -17,7 +17,8 @@ _Important to know:_
 * Requires .NET Framework 4.8
 * Requires [AviSynth][AviSynth] (2.6.0, 32-bit)
 * Already includes ffmpeg
-* Only works on Windows 
+* Only works on Windows
+* If you have macOS use this [LazyConverter](https://github.com/argorar/LazyConverter)
 
 ## About WebM
 

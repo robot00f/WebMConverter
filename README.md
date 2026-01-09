@@ -233,6 +233,10 @@ Drag and drop two or more video files inside the application, select what do you
 
 ## Changelog
 
+#### Version 3.44.1
+* This release is to announce a new software, do you have a mac and want to convert videos in a simple way? Try [LazyConverter](https://github.com/argorar/LazyConverter)
+* Fix code issues
+
 #### Version 3.44.0
 * Add option to put target frames per second in *change rate* filter [request](https://github.com/argorar/WebMConverter/issues/114)
 

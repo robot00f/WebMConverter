@@ -802,8 +802,8 @@ namespace WebMConverter
             var cropDimensions = crop.Split(':');
             var cropW = cropDimensions[2];
             var cropH = cropDimensions[3];
-            var cropXExpr = "";
-            var cropYExpr = "";
+            var cropXExpr = new StringBuilder();
+            var cropYExpr = new StringBuilder();
 
             for (var sect = 0; sect < nSects; sect++)
             {
@@ -832,13 +832,13 @@ namespace WebMConverter
 
                 if (sect == nSects - 1)
                 {
-                    cropXExpr += $"between(t, {Dot(startTime)}, {Dot(endTime)})*{easeX}";
-                    cropYExpr += $"between(t, {Dot(startTime)}, {Dot(endTime)})*{easeY}";
+                    cropXExpr.Append($"between(t, {Dot(startTime)}, {Dot(endTime)})*{easeX}");
+                    cropYExpr.Append($"between(t, {Dot(startTime)}, {Dot(endTime)})*{easeY}");
                 }
                 else
                 {
-                    cropXExpr += $"(gte(t, {Dot(startTime)})*lt(t, {Dot(endTime)}))*{easeX}+";
-                    cropYExpr += $"(gte(t, {Dot(startTime)})*lt(t, {Dot(endTime)}))*{easeY}+";
+                    cropXExpr.Append($"(gte(t, {Dot(startTime)})*lt(t, {Dot(endTime)}))*{easeX}+");
+                    cropYExpr.Append($"(gte(t, {Dot(startTime)})*lt(t, {Dot(endTime)}))*{easeY}+");
                 }
             }
 

@@ -408,7 +408,7 @@ namespace WebMConverter
         public static string IncreaseNumber( string auxName, int digits)
         {
             string lastCharacter = auxName.Substring(auxName.Length - digits, digits);
-            int number = int.Parse(lastCharacter.ToString());
+            int number = int.Parse(lastCharacter);
             number ++;
             return auxName.Substring(0, auxName.Length - digits) + number;
         }

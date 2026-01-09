@@ -150,7 +150,6 @@ namespace WebMConverter
             
             var g = e.Graphics;
             var edgePen = new Pen(Color.White, 1f);
-            var dotBrush = new SolidBrush(Color.White);
             var outsideBrush = new HatchBrush(HatchStyle.Percent50, Color.Transparent);
 
             var maxW = previewFrame.Picture.Width;

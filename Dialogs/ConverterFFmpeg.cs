@@ -174,7 +174,6 @@ namespace WebMConverter.Dialogs
                 return;
 
             string proxyargs = $@"-i ""{_infile}"" -f nut -c copy -v error pipe:1";
-            //boxOutput.AppendText($"{Environment.NewLine}--- CREATING AVISYNTH PROXY --- ");
 
             _pipeFFmpeg = new FFmpeg(proxyargs, true);
             _pipeFFmpeg.ErrorDataReceived += (o, args) =>

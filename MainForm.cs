@@ -2480,7 +2480,7 @@ namespace WebMConverter
                         throw new ArgumentException("Invalid video bitrate!");
 
                     videobitrate = int.Parse(boxBitrate.Text);
-                    maxbitrate = $@"  -minrate:v {(int)videobitrate}k -maxrate:v {(int)videobitrate}k ";
+                    maxbitrate = $@"  -minrate:v {videobitrate}k -maxrate:v {videobitrate}k ";
                 }
                 else if (limitTo != string.Empty)
                 {
@@ -2496,7 +2496,7 @@ namespace WebMConverter
                     if (Filters.Rate != null)
                     {
                         videobitrate = (int)((limit / duration) * 0.8) - audiobitrate;
-                        maxbitrate = $@" -maxrate:v {(int)videobitrate}k ";
+                        maxbitrate = $@" -maxrate:v {videobitrate}k ";
                     }
                         
                 }
@@ -2537,7 +2537,7 @@ namespace WebMConverter
             var extraArguments = boxNGOV.Checked && boxNGOV.Enabled ?
                                 @" -aq-mode 4 -row-mt 1 -tile-columns 6 -tile-rows 2" : @"";
 
-            extraArguments = yuvj420p | fullRange ?
+            extraArguments = yuvj420p || fullRange ?
                             extraArguments + $@" -color_primaries bt709 -color_trc bt709 -colorspace {colorSpace} -color_range full" :
                             extraArguments;
 

@@ -233,6 +233,10 @@ Drag and drop two or more video files inside the application, select what do you
 
 ## Changelog
 
+#### Version 3.44.2
+* Fix generation of output file to detect if exist when load the file [issue](https://github.com/argorar/WebMConverter/issues/115)
+* **Announcement** This project will be frozen and will not receive any further updates. LazyConverter for macOS will continue in development
+
 #### Version 3.44.1
 * This release is to announce a new software, do you have a mac and want to convert videos in a simple way? Try [LazyConverter](https://github.com/argorar/LazyConverter)
 * Fix code issues

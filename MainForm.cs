@@ -2119,13 +2119,28 @@ namespace WebMConverter
 
         private void ValidateInOutput()
         {
-            if (textBoxIn.Text.Equals(textBoxOut.Text))
+            string filename = Path.GetFileNameWithoutExtension(textBoxOut.Text);
+            string extension = Path.GetExtension(textBoxOut.Text);
+            string directory = Path.GetDirectoryName(textBoxOut.Text);
+
+            if (File.Exists(textBoxOut.Text))
             {
-                string filename = Path.GetFileNameWithoutExtension(textBoxOut.Text);
-                string extension = Path.GetExtension(textBoxOut.Text);
-                string directory = Path.GetDirectoryName(textBoxOut.Text);
-                textBoxOut.Text = $"{directory}\\{filename}-1{extension}";
+                var count = 2;
+                do
+                {
+                    string tempName = $"{directory}\\{filename}-{count}{extension}";
+                    if (!File.Exists(tempName))
+                    {
+                        textBoxOut.Text = tempName ;
+                        break;
+                    }
+                    count++;
+                } while (true);
             }
+            else if (textBoxIn.Text.Equals(textBoxOut.Text))
+             {
+                 textBoxOut.Text = $"{directory}\\{filename}-1{extension}";
+             }
         }
 
         private void SetFPS()

@@ -1,4 +1,4 @@
-name: Build WebMConverter
+name: Build and Release WebMConverter
 
 on:
   push:
@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ master ]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -26,14 +29,26 @@ jobs:
     - name: Build project
       run: dotnet build WebMConverter.csproj -c Release --no-restore
 
-    - name: Prepare build artifact
+    - name: Compress Release Files
       run: |
-        mkdir publish-folder
-        xcopy /E /I bin\Release\net8.0-windows\* publish-folder\
+        powershell Compress-Archive -Path bin\Release\net8.0-windows\* -DestinationPath WebMConverter-GPU.zip
       shell: cmd
 
-    - name: Upload Build Artifact
-      uses: actions/upload-artifact@v4
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      if: github.ref == 'refs/heads/master'
       with:
-        name: WebMConverter-GPU
-        path: publish-folder/
+        tag_name: v1.0.${{ github.run_number }}
+        name: Release v1.0.${{ github.run_number }}
+        body: |
+          Automated compilation of WebMConverter with GPU acceleration (NVENC) and .NET 8.0 support.
+          
+          ### Features in this release:
+          * **NVIDIA GPU Acceleration (NVENC)**: Direct H.264 & H.265 encoding support.
+          * **Bug Fixes**: Resolved the `-crf` argument and two-pass crashes on GPU encoding.
+          * **Platform Upgrade**: Migrated configuration files and references to modern .NET 8.0 (Windows).
+          * **Fixed Configuration Crashes**: Cleaned legacy configuration tags causing startup crashes.
+          * **Disabled Auto-Updates**: Prevents the application from overwriting local working GPU binaries.
+        draft: false
+        prerelease: false
+        files: WebMConverter-GPU.zip

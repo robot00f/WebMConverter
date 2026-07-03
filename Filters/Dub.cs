@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -82,7 +82,7 @@ namespace WebMConverter
                 {
                     try
                     {
-                        var index = new Index(indexFile);
+                        var index = new FFMSSharp.Index(indexFile);
 
                         if (index.BelongsToFile(audioFile))
                         {

@@ -14,11 +14,13 @@ A wrapper around ffmpeg and AviSynth made for converting videos to WebM without 
 - **Download it [here][LatestDownload].**
 
 _Important to know:_
-* Requires .NET Framework 4.8
+* **Requires .NET 8.0 (Windows)** (Upgraded from .NET Framework 4.8)
 * Requires [AviSynth][AviSynth] (2.6.0, 32-bit)
-* Already includes ffmpeg
+* Already includes a compatible static build of FFmpeg
 * Only works on Windows
-* If you have macOS use this [LazyConverter](https://github.com/argorar/LazyConverter)
+* **GPU Hardware Acceleration (NVIDIA NVENC)**: Fully supported for H.264 and H.265 MP4 exports without crashes.
+* **Single-Pass GPU Encoding**: Fixed the `-crf` argument and two-pass crashes when hardware acceleration is selected.
+* **Automatic Updates Disabled**: Keeps your custom GPU-compatible local configuration intact.
 
 ## About WebM
 

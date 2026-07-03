@@ -490,7 +490,8 @@ namespace WebMConverter
                 string output = $"{ directory }\\{ auxName}-converted.{ format}";
                 string optionsWithInput = $@" -i ""{file}"" {options}";
 
-                if (!boxHQ.Checked || (checkMP4.Checked && mp4Box.SelectedIndex == 0))
+                bool skipTwoPass = !boxHQ.Checked || (checkMP4.Checked && (mp4Box.SelectedIndex == (int)Mp4Codec.H264 || mp4Box.SelectedIndex == (int)Mp4Codec.H264_nvenc || mp4Box.SelectedIndex == (int)Mp4Codec.Hevc_nvenc));
+                if (skipTwoPass)
                     arguments.Add(string.Format(Template, output, optionsWithInput, "", format));
                 else
                 {
@@ -555,11 +556,7 @@ namespace WebMConverter
             SendMessage(textBoxIn.Handle, EM_SETCUEBANNER, 0, "Paste URL here if you want to download a video, to download just a part add @*start_time-end_time e.g. URL@*5:35-5:45");
             
             this.ActiveControl = buttonBrowseIn;
-            if (!Program.DisableUpdates)
-            {
-                CheckUpdate();
-                CheckUpdateBinaries();
-            }
+            // Disabled automatic updates to prevent overriding GPU-compatible binaries
         }
 
         private void CheckUpdateBinaries()
@@ -2402,7 +2399,8 @@ namespace WebMConverter
             string tempName = String.Empty;
 
             List<string> arguments = new List<string>();
-            if (!boxHQ.Checked || (checkMP4.Checked && mp4Box.SelectedIndex == ((int)Mp4Codec.H264)))
+            bool skipTwoPass = !boxHQ.Checked || (checkMP4.Checked && (mp4Box.SelectedIndex == (int)Mp4Codec.H264 || mp4Box.SelectedIndex == (int)Mp4Codec.H264_nvenc || mp4Box.SelectedIndex == (int)Mp4Codec.Hevc_nvenc));
+            if (skipTwoPass)
                 arguments.Add(string.Format(Template, output, options, "", format));
             else
             {
@@ -2524,10 +2522,18 @@ namespace WebMConverter
             }
             else if (encodingMode == EncodingMode.Variable)
             {
+                bool isNvenc = checkMP4.Checked && (mp4Box.SelectedIndex == (int)Mp4Codec.H264_nvenc || mp4Box.SelectedIndex == (int)Mp4Codec.Hevc_nvenc);
                 var qmin = Math.Max(0, (int)(numericCrf.Value - numericCrfTolerance.Value));
-                var qmax = Math.Min(63, (int)(numericCrf.Value + numericCrfTolerance.Value));
+                var qmax = isNvenc ? Math.Min(51, (int)(numericCrf.Value + numericCrfTolerance.Value)) : Math.Min(63, (int)(numericCrf.Value + numericCrfTolerance.Value));
 
-                qualityarguments = string.Format(VariableVideoArguments, qmin, numericCrf.Value, qmax);
+                if (isNvenc)
+                {
+                    qualityarguments = $" -rc vbr -cq {(int)numericCrf.Value} -qmin {qmin} -qmax {qmax} -b:v 0";
+                }
+                else
+                {
+                    qualityarguments = string.Format(VariableVideoArguments, qmin, numericCrf.Value, qmax);
+                }
                 if (boxAudio.Checked & !boxNGOV.Checked) // only for vorbis
                     qualityarguments += string.Format(VariableAudioArguments, numericAudioQuality.Value);
             }

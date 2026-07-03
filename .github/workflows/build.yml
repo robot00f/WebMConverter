@@ -1,0 +1,39 @@
+name: Build WebMConverter
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore WebMConverter.csproj
+
+    - name: Build project
+      run: dotnet build WebMConverter.csproj -c Release --no-restore
+
+    - name: Prepare build artifact
+      run: |
+        mkdir publish-folder
+        xcopy /E /I bin\Release\net8.0-windows\* publish-folder\
+      shell: cmd
+
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: WebMConverter-GPU
+        path: publish-folder/

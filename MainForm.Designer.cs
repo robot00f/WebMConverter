@@ -121,6 +121,8 @@ namespace WebMConverter
             this.tableLayoutPanelEncodingVideo = new System.Windows.Forms.TableLayoutPanel();
             this.tableVideoConstantOptions = new System.Windows.Forms.TableLayoutPanel();
             this.boxLimit = new System.Windows.Forms.TextBox();
+            this.buttonPreset10MB = new System.Windows.Forms.Button();
+            this.buttonPreset20MB = new System.Windows.Forms.Button();
             this.boxBitrate = new System.Windows.Forms.TextBox();
             this.labelSizeLimit = new System.Windows.Forms.Label();
             this.tableVideoVariableOptions = new System.Windows.Forms.TableLayoutPanel();
@@ -1051,21 +1053,23 @@ namespace WebMConverter
             // 
             // tableVideoConstantOptions
             // 
-            this.tableVideoConstantOptions.ColumnCount = 5;
+            this.tableVideoConstantOptions.ColumnCount = 6;
             this.tableVideoConstantOptions.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 105F));
             this.tableVideoConstantOptions.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 157F));
             this.tableVideoConstantOptions.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 44F));
+            this.tableVideoConstantOptions.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 68F));
+            this.tableVideoConstantOptions.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 68F));
             this.tableVideoConstantOptions.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableVideoConstantOptions.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 11F));
-            this.tableVideoConstantOptions.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 27F));
             this.tableVideoConstantOptions.Controls.Add(labelVideoSizeLimit, 0, 0);
             this.tableVideoConstantOptions.Controls.Add(this.boxLimit, 1, 0);
             this.tableVideoConstantOptions.Controls.Add(labelVideoSizeLimitUnit, 2, 0);
+            this.tableVideoConstantOptions.Controls.Add(this.buttonPreset10MB, 3, 0);
+            this.tableVideoConstantOptions.Controls.Add(this.buttonPreset20MB, 4, 0);
+            this.tableVideoConstantOptions.Controls.Add(this.labelSizeLimit, 5, 0);
             this.tableVideoConstantOptions.Controls.Add(labelVideoBitrate, 0, 1);
             this.tableVideoConstantOptions.Controls.Add(this.boxBitrate, 1, 1);
             this.tableVideoConstantOptions.Controls.Add(labelVideoBitrateUnit, 2, 1);
             this.tableVideoConstantOptions.Controls.Add(labelVideoBitrateHint, 3, 1);
-            this.tableVideoConstantOptions.Controls.Add(this.labelSizeLimit, 3, 0);
             this.tableVideoConstantOptions.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableVideoConstantOptions.Location = new System.Drawing.Point(0, 0);
             this.tableVideoConstantOptions.Margin = new System.Windows.Forms.Padding(0);
@@ -1117,6 +1121,49 @@ namespace WebMConverter
             labelVideoSizeLimitUnit.Text = "MiB";
             labelVideoSizeLimitUnit.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // buttonPreset10MB
+            // 
+            this.buttonPreset10MB.AccessibleDescription = "Preset: 10 MB (Discord limit)";
+            this.buttonPreset10MB.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.buttonPreset10MB.Location = new System.Drawing.Point(308, 4);
+            this.buttonPreset10MB.Margin = new System.Windows.Forms.Padding(2, 4, 2, 4);
+            this.buttonPreset10MB.Name = "buttonPreset10MB";
+            this.buttonPreset10MB.Size = new System.Drawing.Size(64, 26);
+            this.buttonPreset10MB.TabIndex = 2;
+            this.buttonPreset10MB.Text = "10 MB";
+            this.buttonPreset10MB.UseVisualStyleBackColor = true;
+            this.buttonPreset10MB.Click += new System.EventHandler(this.buttonPreset10MB_Click);
+            this.buttonPreset10MB.MouseEnter += new System.EventHandler(this.ControlTooltip);
+            this.buttonPreset10MB.MouseLeave += new System.EventHandler(this.clearToolTip);
+            // 
+            // buttonPreset20MB
+            // 
+            this.buttonPreset20MB.AccessibleDescription = "Preset: 20 MB (Web/Telegram limit)";
+            this.buttonPreset20MB.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.buttonPreset20MB.Location = new System.Drawing.Point(376, 4);
+            this.buttonPreset20MB.Margin = new System.Windows.Forms.Padding(2, 4, 2, 4);
+            this.buttonPreset20MB.Name = "buttonPreset20MB";
+            this.buttonPreset20MB.Size = new System.Drawing.Size(64, 26);
+            this.buttonPreset20MB.TabIndex = 3;
+            this.buttonPreset20MB.Text = "20 MB";
+            this.buttonPreset20MB.UseVisualStyleBackColor = true;
+            this.buttonPreset20MB.Click += new System.EventHandler(this.buttonPreset20MB_Click);
+            this.buttonPreset20MB.MouseEnter += new System.EventHandler(this.ControlTooltip);
+            this.buttonPreset20MB.MouseLeave += new System.EventHandler(this.clearToolTip);
+            // 
+            // labelSizeLimit
+            // 
+            this.labelSizeLimit.AutoSize = true;
+            this.labelSizeLimit.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.labelSizeLimit.Location = new System.Drawing.Point(446, 0);
+            this.labelSizeLimit.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.labelSizeLimit.Name = "labelSizeLimit";
+            this.labelSizeLimit.Size = new System.Drawing.Size(486, 34);
+            this.labelSizeLimit.TabIndex = 5;
+            this.labelSizeLimit.Text = "Will adjust the quality to attempt to stay below this limit. Do not pretend to pu" +
+    "t 1 minute long video, 1080p in 4 MB.";
+            this.labelSizeLimit.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // labelVideoBitrate
             // 
             labelVideoBitrate.AutoSize = true;
@@ -1136,7 +1183,7 @@ namespace WebMConverter
             this.boxBitrate.Margin = new System.Windows.Forms.Padding(4, 4, 0, 4);
             this.boxBitrate.Name = "boxBitrate";
             this.boxBitrate.Size = new System.Drawing.Size(153, 22);
-            this.boxBitrate.TabIndex = 2;
+            this.boxBitrate.TabIndex = 4;
             this.boxBitrate.TextChanged += new System.EventHandler(this.UpdateArguments);
             this.boxBitrate.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxNumbersOnly);
             // 
@@ -1155,7 +1202,7 @@ namespace WebMConverter
             // labelVideoBitrateHint
             // 
             labelVideoBitrateHint.AutoSize = true;
-            this.tableVideoConstantOptions.SetColumnSpan(labelVideoBitrateHint, 2);
+            this.tableVideoConstantOptions.SetColumnSpan(labelVideoBitrateHint, 3);
             labelVideoBitrateHint.Dock = System.Windows.Forms.DockStyle.Fill;
             labelVideoBitrateHint.Location = new System.Drawing.Point(310, 34);
             labelVideoBitrateHint.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -1164,20 +1211,6 @@ namespace WebMConverter
             labelVideoBitrateHint.TabIndex = 0;
             labelVideoBitrateHint.Text = "Determines the quality of the video.";
             labelVideoBitrateHint.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // labelSizeLimit
-            // 
-            this.labelSizeLimit.AutoSize = true;
-            this.tableVideoConstantOptions.SetColumnSpan(this.labelSizeLimit, 2);
-            this.labelSizeLimit.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.labelSizeLimit.Location = new System.Drawing.Point(310, 0);
-            this.labelSizeLimit.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelSizeLimit.Name = "labelSizeLimit";
-            this.labelSizeLimit.Size = new System.Drawing.Size(622, 34);
-            this.labelSizeLimit.TabIndex = 3;
-            this.labelSizeLimit.Text = "Will adjust the quality to attempt to stay below this limit. Do not pretend to pu" +
-    "t 1 minute long video, 1080p in 4 MB.";
-            this.labelSizeLimit.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // tableVideoVariableOptions
             // 
@@ -2168,7 +2201,7 @@ namespace WebMConverter
             labelEncodingNGOVHint.Name = "labelEncodingNGOVHint";
             labelEncodingNGOVHint.Size = new System.Drawing.Size(1073, 34);
             labelEncodingNGOVHint.TabIndex = 0;
-            labelEncodingNGOVHint.Text = "«Now 4chan support it» Use the next-gen VP9/Opus encoders instead of the standard" +
+            labelEncodingNGOVHint.Text = "Â«Now 4chan support itÂ» Use the next-gen VP9/Opus encoders instead of the standard" +
     " VP8/Vorbis. It can take more time.";
             labelEncodingNGOVHint.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -3117,6 +3150,8 @@ namespace WebMConverter
         private System.Windows.Forms.NumericUpDown numericAudioQuality;
         private System.Windows.Forms.Button buttonConstantDefault;
         private System.Windows.Forms.Button buttonVariableDefault;
+        private System.Windows.Forms.Button buttonPreset10MB;
+        private System.Windows.Forms.Button buttonPreset20MB;
         private System.Windows.Forms.TextBox boxFrameRate;
         private System.Windows.Forms.ToolStripButton buttonExportProcessing;
         public System.Windows.Forms.ToolStripButton boxAdvancedScripting;

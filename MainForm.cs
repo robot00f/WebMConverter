@@ -69,9 +69,9 @@ namespace WebMConverter
         /// </summary>
         private const string TemplateArguments = "{0} -c:v {5} -pix_fmt {10} -threads {1} -slices {2}{3}{4}{6}{12}{7}{8}{9}{11}";
 
-        /// <summary>
         /// {0} is video bitrate
-        /// {1} is ' -fs XM' if X MB limit enabled otherwise blank
+        /// {1} is blank (previously ' -fs XM', eliminated to prevent container corruption and cutoff)
+        /// {2} is minrate/maxrate/bufsize constraints if applicable, otherwise blank
         /// </summary>
         private const string ConstantVideoArgumentsWebm = " {2} -b:v {0}k -qcomp 0{1}";
         private const string ConstantVideoArgumentsMp4 = " {2} -b:v {0}k{1} ";
@@ -264,6 +264,8 @@ namespace WebMConverter
             toolTip.SetToolTip(numericDelay, "Delay audio in your video, can be positive and negative. The value represent seconds");
             toolTip.SetToolTip(boxHQ, "Enables two-pass encoding and adds some extra encoding arguments, increasing output quality, but increases the time it takes to encode your file.");
             toolTip.SetToolTip(checkFFmpeg, "Fixes audio synchronization problems and duplicate frames");
+            toolTip.SetToolTip(buttonPreset10MB, "Set size limit to 10 MB (Discord limit)");
+            toolTip.SetToolTip(buttonPreset20MB, "Set size limit to 20 MB (Web/Telegram limit)");
         }
 
         private void CheckProccess()
@@ -479,6 +481,8 @@ namespace WebMConverter
         {
 
             string options = GenerateArguments();
+            if (checkMP4.Checked && !options.Contains("-movflags +faststart"))
+                options += " -movflags +faststart";
 
             string format = checkMP4.Checked ? "mp4" : "webm";
             List<string> arguments = new List<string>();
@@ -1441,7 +1445,7 @@ namespace WebMConverter
             tableVideoConstantOptions.BringToFront();
             tableAudioConstantOptions.BringToFront();
             encodingMode = EncodingMode.Constant;
-            boxLimit.TabStop = boxBitrate.TabStop = boxAudioBitrate.TabStop = true;
+            boxLimit.TabStop = boxBitrate.TabStop = boxAudioBitrate.TabStop = buttonPreset10MB.TabStop = buttonPreset20MB.TabStop = true;
             numericCrf.TabStop = numericCrfTolerance.TabStop = numericAudioQuality.TabStop = false;
 
             buttonVariableDefault.Visible = false;
@@ -1466,6 +1470,38 @@ namespace WebMConverter
             showToolTip("Saved!", 1000);
         }
 
+        private void buttonPreset10MB_Click(object sender, EventArgs e)
+        {
+            boxConstant.Checked = true;
+            boxBitrate.Text = string.Empty;
+            boxLimit.Text = "10";
+            UpdateArguments();
+
+            if (!_argumentError)
+            {
+                string feedback = "Preset applied: 10 MB (Discord limit)";
+                if (Program.InputFile != null)
+                    feedback += " — Bitrate updated";
+                showToolTip(feedback, 3000);
+            }
+        }
+
+        private void buttonPreset20MB_Click(object sender, EventArgs e)
+        {
+            boxConstant.Checked = true;
+            boxBitrate.Text = string.Empty;
+            boxLimit.Text = "20";
+            UpdateArguments();
+
+            if (!_argumentError)
+            {
+                string feedback = "Preset applied: 20 MB (Web/Telegram limit)";
+                if (Program.InputFile != null)
+                    feedback += " — Bitrate updated";
+                showToolTip(feedback, 3000);
+            }
+        }
+
         void boxVariable_CheckedChanged(object sender, EventArgs e)
         {
             if (!(sender as RadioButton).Checked) return;
@@ -1474,7 +1510,7 @@ namespace WebMConverter
             tableAudioVariableOptions.BringToFront();
             encodingMode = EncodingMode.Variable;
             numericCrf.TabStop = numericCrfTolerance.TabStop = numericAudioQuality.TabStop = true;
-            boxLimit.TabStop = boxBitrate.TabStop = boxAudioBitrate.TabStop = false;
+            boxLimit.TabStop = boxBitrate.TabStop = boxAudioBitrate.TabStop = buttonPreset10MB.TabStop = buttonPreset20MB.TabStop = false;
 
             buttonConstantDefault.Visible = false;
 
@@ -2370,6 +2406,8 @@ namespace WebMConverter
                 throw new Exception("Input and output files are the same!");
 
             string options = boxArguments.Text;
+            if (checkMP4.Checked && !options.Contains("-movflags +faststart"))
+                options += " -movflags +faststart";
             string avsFileName = null;
 
             ValidateInputFile(input);
@@ -2438,8 +2476,9 @@ namespace WebMConverter
                 var audio = string.Empty;
                 if (!boxAudio.Checked)
                     audio = " -an ";
+                var loopExtra = checkMP4.Checked ? " -movflags +faststart" : "";
                 tempName = $"{directory}\\{filename}-loop{extension}";
-                arguments.Add(string.Format(Template, tempName, $" -i \"{output}\" {audio} -filter_complex {LoopFilter} ", string.Empty, format));
+                arguments.Add(string.Format(Template, tempName, $" -i \"{output}\" {audio} -filter_complex {LoopFilter}{loopExtra} ", string.Empty, format));
 
                 Program.Loop = new LoopFileNames(textBoxOut.Text, tempName);
             }
@@ -2457,16 +2496,14 @@ namespace WebMConverter
             string qualityarguments = null;
             if (encodingMode == EncodingMode.Constant)
             {
-                float limit = 0;
+                double limit = 0;
                 var limitTo = string.Empty;
                 if (!string.IsNullOrWhiteSpace(boxLimit.Text))
                 {
-                    if (!float.TryParse(boxLimit.Text.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out limit))
+                    if (!double.TryParse(boxLimit.Text.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out limit))
                         throw new ArgumentException("Invalid size limit!");
 
                     limit = limit * 1024 * 1024;
-
-                    limitTo = $@" -fs {(int)limit}";
                 }
 
                 var audiobitrate = 0;
@@ -2493,25 +2530,26 @@ namespace WebMConverter
                         throw new ArgumentException("Invalid video bitrate!");
 
                     videobitrate = int.Parse(boxBitrate.Text);
+
+                    if (videobitrate < 25)
+                        throw new ArgumentException("Video bitrate is too low! It has to be at least 25Kb/s");
+
                     maxbitrate = $@"  -minrate:v {videobitrate}k -maxrate:v {videobitrate}k ";
                 }
-                else if (limitTo != string.Empty)
+                else if (limit > 0)
                 {
                     var duration = GetDuration();
 
                     if (duration > 0)
-                        videobitrate = (int)(limit / duration / 1024 * 8) - audiobitrate;
+                    {
+                        double budgetBytes = limit * 0.955;
+                        videobitrate = (int)((budgetBytes * 8.0 / duration) / 1024.0) - audiobitrate;
+                    }
 
-                    if (videobitrate < 0)
+                    if (videobitrate < 25)
                         throw new ArgumentException("Your size constraints are too tight! Trim your video or lower your audio bitrate.");
 
-                    
-                    if (Filters.Rate != null)
-                    {
-                        videobitrate = (int)((limit / duration) * 0.8) - audiobitrate;
-                        maxbitrate = $@" -maxrate:v {videobitrate}k ";
-                    }
-                        
+                    maxbitrate = $@" -maxrate:v {(int)(videobitrate * 1.15)}k -bufsize:v {(int)(videobitrate * 1.5)}k ";
                 }
 
                 var ConstantVideoArguments = checkMP4.Checked ? ConstantVideoArgumentsMp4 : ConstantVideoArgumentsWebm;
@@ -2577,14 +2615,18 @@ namespace WebMConverter
             if (checkFFmpeg.Checked && Filters.Trim != null)
                 extraArguments = extraArguments + $" -ss {Filters.Trim.FFmpegSS()}";
 
-            if (checkMP4.Checked && mp4Box.SelectedIndex == ((int)Mp4Codec.Hevc_nvenc))
-                vcodec = @"hevc_nvenc";
-            else if (checkMP4.Checked && mp4Box.SelectedIndex == ((int)Mp4Codec.H264_nvenc))
-                vcodec = @"h264_nvenc";
-            else if (checkMP4.Checked && mp4Box.SelectedIndex == ((int)Mp4Codec.H265))
-                vcodec = @"libx265";
-            else if (checkMP4.Checked && mp4Box.SelectedIndex == ((int)Mp4Codec.H264))
-                vcodec = @"libx264";
+            if (checkMP4.Checked)
+            {
+                extraArguments += " -movflags +faststart";
+                if (mp4Box.SelectedIndex == ((int)Mp4Codec.Hevc_nvenc))
+                    vcodec = @"hevc_nvenc";
+                else if (mp4Box.SelectedIndex == ((int)Mp4Codec.H264_nvenc))
+                    vcodec = @"h264_nvenc";
+                else if (mp4Box.SelectedIndex == ((int)Mp4Codec.H265))
+                    vcodec = @"libx265";
+                else if (mp4Box.SelectedIndex == ((int)Mp4Codec.H264))
+                    vcodec = @"libx264";
+            }
 
             string webmAcodec = (boxNGOV.Checked ? @"libopus" : @"libvorbis");
             var acodec = checkMP4.Checked ? @"aac" : webmAcodec;

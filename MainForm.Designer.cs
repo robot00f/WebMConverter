@@ -1160,8 +1160,7 @@ namespace WebMConverter
             this.labelSizeLimit.Name = "labelSizeLimit";
             this.labelSizeLimit.Size = new System.Drawing.Size(486, 34);
             this.labelSizeLimit.TabIndex = 5;
-            this.labelSizeLimit.Text = "Will adjust the quality to attempt to stay below this limit. Do not pretend to pu" +
-    "t 1 minute long video, 1080p in 4 MB.";
+            this.labelSizeLimit.Text = "Adjusts bitrate to stay below limit (full video, no cutoff).";
             this.labelSizeLimit.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // labelVideoBitrate
@@ -1353,8 +1352,8 @@ namespace WebMConverter
             this.checkMP4.Location = new System.Drawing.Point(299, 4);
             this.checkMP4.Margin = new System.Windows.Forms.Padding(4);
             this.checkMP4.Name = "checkMP4";
-            this.checkMP4.Padding = new System.Windows.Forms.Padding(267, 0, 173, 0);
-            this.checkMP4.Size = new System.Drawing.Size(633, 26);
+            this.checkMP4.Padding = new System.Windows.Forms.Padding(0, 0, 10, 0);
+            this.checkMP4.Size = new System.Drawing.Size(220, 26);
             this.checkMP4.TabIndex = 6;
             this.checkMP4.Text = "Activate mp4 conversion";
             this.checkMP4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -3005,11 +3004,11 @@ namespace WebMConverter
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1431, 549);
+            this.ClientSize = new System.Drawing.Size(1550, 600);
             this.Controls.Add(statusStrip);
             this.Controls.Add(tableMainForm);
             this.Controls.Add(this.panelHideTheOptions);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(4);
             this.MinimumSize = new System.Drawing.Size(1293, 309);

@@ -292,74 +292,48 @@ namespace WebMConverter
 
         private void LoadConfiguration()
         {
-            if (configuration.AppSettings.Settings["HighQuality"].Value.Equals("true") || configuration.AppSettings.Settings["HighQuality"].Value.Equals("True"))
-                boxHQ.Checked = true;
-            else
-                boxHQ.Checked = false;
+            boxHQ.Checked = configuration.AppSettings.Settings["HighQuality"]?.Value?.Equals("false", StringComparison.OrdinalIgnoreCase) != true;
 
-            if (configuration.AppSettings.Settings["EncodingMode"].Value == EncodingMode.Constant.ToString())
-                boxConstant.Checked = true;
-            else
+            if (configuration.AppSettings.Settings["EncodingMode"]?.Value == EncodingMode.Variable.ToString())
                 boxVariable.Checked = true;
-
-            if (configuration.AppSettings.Settings["AudioEnabled"].Value.Equals("true") || configuration.AppSettings.Settings["AudioEnabled"].Value.Equals("True"))
-                boxAudio.Checked = true;
             else
-                boxAudio.Checked = false;
+                boxConstant.Checked = true;
 
-            if (configuration.AppSettings.Settings["VP9"].Value.Equals("true") || configuration.AppSettings.Settings["VP9"].Value.Equals("True"))
-                boxNGOV.Checked = true;
-            else
-                boxNGOV.Checked = false;
+            boxAudio.Checked = configuration.AppSettings.Settings["AudioEnabled"]?.Value?.Equals("false", StringComparison.OrdinalIgnoreCase) != true;
 
-            if (configuration.AppSettings.Settings["MP4"].Value.Equals("True"))
-                checkMP4.Checked = true;
-            else
-                checkMP4.Checked = false;
+            boxNGOV.Checked = configuration.AppSettings.Settings["VP9"]?.Value?.Equals("false", StringComparison.OrdinalIgnoreCase) != true;
 
-            if (configuration.AppSettings.Settings["POP"].Value.Equals("True"))
-                boxDisablePop.Checked = true;
-            else
-                boxDisablePop.Checked = false;
+            checkMP4.Checked = configuration.AppSettings.Settings["MP4"]?.Value?.Equals("false", StringComparison.OrdinalIgnoreCase) != true;
 
-            if (configuration.AppSettings.Settings["DisableUpdates"].Value.Equals("True"))
-                boxDisableUpdates.Checked = true;
-            else
-                boxDisableUpdates.Checked = false;
+            boxDisablePop.Checked = configuration.AppSettings.Settings["POP"]?.Value?.Equals("true", StringComparison.OrdinalIgnoreCase) == true;
 
-            if (configuration.AppSettings.Settings["DWO"].Value.Equals("True"))
-                boxDownloadOptions.Checked = true;
-            else
-                boxDownloadOptions.Checked = false;
+            boxDisableUpdates.Checked = configuration.AppSettings.Settings["DisableUpdates"]?.Value?.Equals("false", StringComparison.OrdinalIgnoreCase) != true;
 
-            if (configuration.AppSettings.Settings["DisableSubtitles"].Value.Equals("True"))
-                boxDisableExtractSubtitles.Checked = true;
-            else
-                boxDisableExtractSubtitles.Checked = false;
+            boxDownloadOptions.Checked = configuration.AppSettings.Settings["DWO"]?.Value?.Equals("true", StringComparison.OrdinalIgnoreCase) == true;
 
-            if (configuration.AppSettings.Settings["DisableMetadata"].Value.Equals("True"))
-                boxDisableMetadata.Checked = true;
-            else
-                boxDisableMetadata.Checked = false;
+            boxDisableExtractSubtitles.Checked = configuration.AppSettings.Settings["DisableSubtitles"]?.Value?.Equals("true", StringComparison.OrdinalIgnoreCase) == true;
 
-            if (configuration.AppSettings.Settings["OnlyFFMPEG"].Value.Equals("True"))
-                checkFFmpeg.Checked = true;
-            else
-                checkFFmpeg.Checked = false;
+            boxDisableMetadata.Checked = configuration.AppSettings.Settings["DisableMetadata"]?.Value?.Equals("true", StringComparison.OrdinalIgnoreCase) == true;
 
-            if (!String.IsNullOrEmpty(configuration.AppSettings.Settings["PathDownload"].Value))
+            checkFFmpeg.Checked = configuration.AppSettings.Settings["OnlyFFMPEG"]?.Value?.Equals("false", StringComparison.OrdinalIgnoreCase) != true;
+
+            if (!String.IsNullOrEmpty(configuration.AppSettings.Settings["PathDownload"]?.Value))
                 textPathDownloaded.Text = configuration.AppSettings.Settings["PathDownload"].Value;
 
-            if (!String.IsNullOrEmpty(configuration.AppSettings.Settings["SizeLimit"].Value))
+            if (!String.IsNullOrEmpty(configuration.AppSettings.Settings["SizeLimit"]?.Value))
             {
                 txtDefaultSizeLimit.Text = configuration.AppSettings.Settings["SizeLimit"].Value;
                 boxLimit.Text = configuration.AppSettings.Settings["SizeLimit"].Value;
             }
 
-            mp4Box.SelectedIndex = int.Parse(configuration.AppSettings.Settings["MP4Codec"].Value);
-            boxDefaultText.Text = configuration.AppSettings.Settings["Text"].Value;
-            CRF4k.Value = Decimal.Parse(configuration.AppSettings.Settings["CRF4k"].Value);
-            CRFother.Value = Decimal.Parse(configuration.AppSettings.Settings["CRFother"].Value);
+            int mp4Codec = 2;
+            if (int.TryParse(configuration.AppSettings.Settings["MP4Codec"]?.Value, out int parsedCodec))
+                mp4Codec = parsedCodec;
+            mp4Box.SelectedIndex = mp4Codec;
+
+            boxDefaultText.Text = configuration.AppSettings.Settings["Text"]?.Value ?? "";
+            CRF4k.Value = decimal.TryParse(configuration.AppSettings.Settings["CRF4k"]?.Value, out decimal crf4k) ? crf4k : 26;
+            CRFother.Value = decimal.TryParse(configuration.AppSettings.Settings["CRFother"]?.Value, out decimal crfOther) ? crfOther : 30;
             checkBoxAlpha.Enabled = boxNGOV.Checked && !checkMP4.Checked;
             Program.DisablePop = boxDisablePop.Checked;
             Program.DisableUpdates = boxDisableUpdates.Checked;

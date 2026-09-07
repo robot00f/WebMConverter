@@ -176,6 +176,7 @@ namespace WebMConverter
             this.boxDisableMetadata = new System.Windows.Forms.CheckBox();
             this.boxDisableExtractSubtitles = new System.Windows.Forms.CheckBox();
             this.boxDisableUpdates = new System.Windows.Forms.CheckBox();
+            this.buttonUpdateYtDlp = new System.Windows.Forms.Button();
             this.boxDownloadOptions = new System.Windows.Forms.CheckBox();
             this.boxDisablePop = new System.Windows.Forms.CheckBox();
             this.buttonOpenPath = new System.Windows.Forms.Button();
@@ -2381,6 +2382,7 @@ namespace WebMConverter
             groupBox1.Controls.Add(this.boxDisableMetadata);
             groupBox1.Controls.Add(this.boxDisableExtractSubtitles);
             groupBox1.Controls.Add(this.boxDisableUpdates);
+            groupBox1.Controls.Add(this.buttonUpdateYtDlp);
             groupBox1.Controls.Add(this.boxDownloadOptions);
             groupBox1.Controls.Add(this.boxDisablePop);
             groupBox1.Controls.Add(this.buttonOpenPath);
@@ -2475,6 +2477,17 @@ namespace WebMConverter
             this.boxDisableUpdates.Text = "Disable check for updates. You will not get the latest and better";
             this.boxDisableUpdates.UseVisualStyleBackColor = true;
             this.boxDisableUpdates.CheckedChanged += new System.EventHandler(this.boxDisableUpdates_CheckedChanged);
+            // 
+            // buttonUpdateYtDlp
+            // 
+            this.buttonUpdateYtDlp.Location = new System.Drawing.Point(430, 136);
+            this.buttonUpdateYtDlp.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.buttonUpdateYtDlp.Name = "buttonUpdateYtDlp";
+            this.buttonUpdateYtDlp.Size = new System.Drawing.Size(180, 28);
+            this.buttonUpdateYtDlp.TabIndex = 16;
+            this.buttonUpdateYtDlp.Text = "Update yt-dlp";
+            this.buttonUpdateYtDlp.UseVisualStyleBackColor = true;
+            this.buttonUpdateYtDlp.Click += new System.EventHandler(this.buttonUpdateYtDlp_Click);
             // 
             // boxDownloadOptions
             // 
@@ -3213,6 +3226,7 @@ namespace WebMConverter
         private System.Windows.Forms.CheckBox boxDisablePop;
         private System.Windows.Forms.CheckBox boxDownloadOptions;
         private System.Windows.Forms.CheckBox boxDisableUpdates;
+        private System.Windows.Forms.Button buttonUpdateYtDlp;
         private System.Windows.Forms.CheckBox boxDisableExtractSubtitles;
         private System.Windows.Forms.Label labelStep1Grid;
         private System.Windows.Forms.CheckBox boxDisableMetadata;

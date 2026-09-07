@@ -44,6 +44,8 @@ jobs:
           Automated compilation of WebMConverter with GPU acceleration (NVENC) and .NET 8.0 support.
           
           ### Features in this release:
+          * **Updated yt-dlp & Fix HTTP 403 Forbidden**: Bundled updated yt-dlp binary (2026.08.19) with modern player client extractor args, resolving YouTube HTTP 403 errors and player signature issues.
+          * **Download Diagnostics & Self-Updater**: Added in-app yt-dlp self-update button, actionable failure diagnostics, and resilient file moving/path handling.
           * **NVIDIA GPU Acceleration (NVENC)**: Direct H.264 & H.265 encoding support.
           * **Bug Fixes**: Resolved the `-crf` argument and two-pass crashes on GPU encoding.
           * **Platform Upgrade**: Migrated configuration files and references to modern .NET 8.0 (Windows).

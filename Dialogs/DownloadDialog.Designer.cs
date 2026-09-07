@@ -1,4 +1,4 @@
-﻿namespace WebMConverter.Dialogs
+namespace WebMConverter.Dialogs
 {
     partial class DownloadDialog
     {
@@ -34,6 +34,7 @@
             this.boxOutput = new System.Windows.Forms.RichTextBox();
             this.pictureStatus = new System.Windows.Forms.PictureBox();
             this.buttonLoad = new System.Windows.Forms.Button();
+            this.buttonUpdateYtDlp = new System.Windows.Forms.Button();
             this.buttonCancel = new System.Windows.Forms.Button();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.StatusImages = new System.Windows.Forms.ImageList(this.components);
@@ -44,14 +45,16 @@
             // 
             // table
             // 
-            table.ColumnCount = 3;
+            table.ColumnCount = 4;
             table.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 41F));
-            table.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            table.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            table.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            table.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33334F));
+            table.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             table.Controls.Add(this.boxOutput, 0, 0);
             table.Controls.Add(this.pictureStatus, 0, 2);
             table.Controls.Add(this.buttonLoad, 1, 2);
-            table.Controls.Add(this.buttonCancel, 2, 2);
+            table.Controls.Add(this.buttonUpdateYtDlp, 2, 2);
+            table.Controls.Add(this.buttonCancel, 3, 2);
             table.Controls.Add(this.progressBar, 0, 1);
             table.Dock = System.Windows.Forms.DockStyle.Fill;
             table.Location = new System.Drawing.Point(4, 4);
@@ -67,7 +70,7 @@
             // boxOutput
             // 
             this.boxOutput.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            table.SetColumnSpan(this.boxOutput, 3);
+            table.SetColumnSpan(this.boxOutput, 4);
             this.boxOutput.DetectUrls = false;
             this.boxOutput.Dock = System.Windows.Forms.DockStyle.Fill;
             this.boxOutput.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -100,19 +103,31 @@
             this.buttonLoad.Location = new System.Drawing.Point(45, 501);
             this.buttonLoad.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.buttonLoad.Name = "buttonLoad";
-            this.buttonLoad.Size = new System.Drawing.Size(423, 30);
+            this.buttonLoad.Size = new System.Drawing.Size(280, 30);
             this.buttonLoad.TabIndex = 1;
             this.buttonLoad.Text = "Load";
             this.buttonLoad.UseVisualStyleBackColor = true;
             this.buttonLoad.Click += new System.EventHandler(this.buttonLoad_Click);
             // 
+            // buttonUpdateYtDlp
+            // 
+            this.buttonUpdateYtDlp.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.buttonUpdateYtDlp.Location = new System.Drawing.Point(333, 501);
+            this.buttonUpdateYtDlp.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonUpdateYtDlp.Name = "buttonUpdateYtDlp";
+            this.buttonUpdateYtDlp.Size = new System.Drawing.Size(280, 30);
+            this.buttonUpdateYtDlp.TabIndex = 3;
+            this.buttonUpdateYtDlp.Text = "Update yt-dlp";
+            this.buttonUpdateYtDlp.UseVisualStyleBackColor = true;
+            this.buttonUpdateYtDlp.Click += new System.EventHandler(this.buttonUpdateYtDlp_Click);
+            // 
             // buttonCancel
             // 
             this.buttonCancel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.buttonCancel.Location = new System.Drawing.Point(476, 501);
+            this.buttonCancel.Location = new System.Drawing.Point(621, 501);
             this.buttonCancel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.buttonCancel.Name = "buttonCancel";
-            this.buttonCancel.Size = new System.Drawing.Size(424, 30);
+            this.buttonCancel.Size = new System.Drawing.Size(279, 30);
             this.buttonCancel.TabIndex = 2;
             this.buttonCancel.Text = "Cancel";
             this.buttonCancel.UseVisualStyleBackColor = true;
@@ -120,7 +135,7 @@
             // 
             // progressBar
             // 
-            table.SetColumnSpan(this.progressBar, 3);
+            table.SetColumnSpan(this.progressBar, 4);
             this.progressBar.Dock = System.Windows.Forms.DockStyle.Fill;
             this.progressBar.Location = new System.Drawing.Point(4, 463);
             this.progressBar.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
@@ -166,6 +181,7 @@
         private System.Windows.Forms.ImageList StatusImages;
         private System.Windows.Forms.RichTextBox boxOutput;
         private System.Windows.Forms.Button buttonLoad;
+        private System.Windows.Forms.Button buttonUpdateYtDlp;
         private System.Windows.Forms.ProgressBar progressBar;
 
 

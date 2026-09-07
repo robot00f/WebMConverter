@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Timer = System.Windows.Forms.Timer;
@@ -22,6 +23,7 @@ namespace WebMConverter.Dialogs
         private Timer _timer;
         private bool _ended;
         private bool _panic;
+        private bool _isUpdating;
 
         private TaskbarManager taskbarManager;
 
@@ -30,8 +32,15 @@ namespace WebMConverter.Dialogs
             InitializeComponent();
             pictureStatus.BackgroundImage = StatusImages.Images["Happening"];
 
+            if (url.Contains('@') && String.IsNullOrEmpty(options))
+            {
+                var parts = url.Split(new[] { '@' }, 2);
+                url = parts[0];
+                options = parts[1];
+            }
+
             _infile = '"' + url.Replace(@"""", @"\""") + '"';
-            _options = String.IsNullOrEmpty(options) ? String.Empty : $" --download-sections \"{options}\" " ;
+            _options = String.IsNullOrEmpty(options) ? String.Empty : $" --download-sections \"{options}\" ";
             OutputPath = outputPath;
 
             taskbarManager = TaskbarManager.Instance;
@@ -88,13 +97,14 @@ namespace WebMConverter.Dialogs
 
         private void DownloadDialog_Load(object sender, EventArgs e)
         {
+            buttonUpdateYtDlp.Enabled = false;
             boxOutput.AppendText($"{Environment.NewLine}Starting Process");
             _downloaderProcess = new YoutubeDL(null);
 
-            if(_infile.Contains("youtu"))
-                _downloaderProcess.StartInfo.Arguments = $@"-f bestvideo+bestaudio  {_infile} {_options}";
+            if (_infile.IndexOf("youtu", StringComparison.OrdinalIgnoreCase) >= 0)
+                _downloaderProcess.StartInfo.Arguments = $@"-f ""bestvideo*+bestaudio/best"" --no-mtime --extractor-args ""youtube:player_client=android,web"" --compat-options no-youtube-unavailable-videos {_infile}{_options}".Trim();
             else
-                _downloaderProcess.StartInfo.Arguments = $@" {_infile}";
+                _downloaderProcess.StartInfo.Arguments = $@"-f ""bestvideo*+bestaudio/best"" --no-mtime {_infile}{_options}".Trim();
 
             _downloaderProcess.ErrorDataReceived += ProcessOnErrorDataReceived;
             _downloaderProcess.OutputDataReceived += ProcessOnOutputDataReceived;
@@ -119,16 +129,62 @@ namespace WebMConverter.Dialogs
 
             if (_downloaderProcess.ExitCode != 0)
             {
+                string outputText = boxOutput.Text ?? string.Empty;
+                bool isForbidden = outputText.IndexOf("403", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                   outputText.IndexOf("Forbidden", StringComparison.OrdinalIgnoreCase) >= 0;
+                bool isBotOrSign = outputText.IndexOf("bot", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                   outputText.IndexOf("Sign in", StringComparison.OrdinalIgnoreCase) >= 0;
+                bool isExtractor = outputText.IndexOf("extractor", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                   outputText.IndexOf("Unable to extract", StringComparison.OrdinalIgnoreCase) >= 0;
+
                 boxOutput.AppendText($"{Environment.NewLine}{Environment.NewLine}{Program.yt_dl} exited with exit code {_downloaderProcess.ExitCode}. That's usually bad.");
+                boxOutput.AppendText($"{Environment.NewLine}{Environment.NewLine}--------------------------------------------------------------------------------");
+                boxOutput.AppendText($"{Environment.NewLine}[ERROR DIAGNOSIS]");
+                if (isForbidden)
+                    boxOutput.AppendText($"{Environment.NewLine}• HTTP 403 Forbidden detected: YouTube has rejected request signatures.");
+                else if (isBotOrSign)
+                    boxOutput.AppendText($"{Environment.NewLine}• Anti-bot verification or sign-in requirement detected from YouTube.");
+                else if (isExtractor)
+                    boxOutput.AppendText($"{Environment.NewLine}• Stream extractor failure: YouTube player JavaScript format has changed.");
+                else
+                    boxOutput.AppendText($"{Environment.NewLine}• Download failed with exit code {_downloaderProcess.ExitCode}.");
+
+                boxOutput.AppendText($"{Environment.NewLine}{Environment.NewLine}Why this happens:");
+                boxOutput.AppendText($"{Environment.NewLine}YouTube frequently updates its internal player APIs, streaming formats, and anti-bot");
+                boxOutput.AppendText($"{Environment.NewLine}challenges. When this occurs, older yt-dlp versions cannot extract video streams.");
+                boxOutput.AppendText($"{Environment.NewLine}{Environment.NewLine}[ACTIONABLE RECOVERY STEPS]");
+                boxOutput.AppendText($"{Environment.NewLine}1. Click 'Update yt-dlp' below to update to the latest stable release (runs yt-dlp.exe -U).");
+                boxOutput.AppendText($"{Environment.NewLine}2. If YouTube requires account verification, supply cookies or check the video in a browser.");
+                boxOutput.AppendText($"{Environment.NewLine}3. Once updated, close this window and retry downloading the video.");
+                boxOutput.AppendText($"{Environment.NewLine}--------------------------------------------------------------------------------{Environment.NewLine}");
+
                 pictureStatus.BackgroundImage = StatusImages.Images["Failure"];
                 buttonCancel.Enabled = true;
+                buttonUpdateYtDlp.Enabled = true;
                 taskbarManager.SetProgressState(TaskbarProgressBarState.Error);
+
+                if (isForbidden || _downloaderProcess.ExitCode == 1)
+                {
+                    var promptResult = MessageBox.Show(this,
+                        $"yt-dlp failed (Exit code {_downloaderProcess.ExitCode}" + (isForbidden ? " - HTTP 403 Forbidden" : "") + ").\n\n" +
+                        "YouTube frequently changes its player API and anti-bot verification.\n\n" +
+                        "Would you like to run 'yt-dlp -U' now to update yt-dlp to the latest release?",
+                        "YouTube API Error - Update yt-dlp?",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Warning);
+
+                    if (promptResult == DialogResult.Yes)
+                    {
+                        _ = TriggerYtDlpSelfUpdateAsync();
+                    }
+                }
             }
             else
             {
                 boxOutput.AppendText($"{Environment.NewLine}{Environment.NewLine}Video downloaded succesfully!");
                 pictureStatus.BackgroundImage = StatusImages.Images["Success"];
                 buttonLoad.Enabled = true;
+                buttonUpdateYtDlp.Enabled = true;
                 buttonCancel.Enabled = true;
                 buttonCancel.Text = "Close";
                 MoveNewFile();
@@ -136,6 +192,82 @@ namespace WebMConverter.Dialogs
             }
 
             _ended = true;
+        }
+
+        private async void buttonUpdateYtDlp_Click(object sender, EventArgs e)
+        {
+            await TriggerYtDlpSelfUpdateAsync();
+        }
+
+        public async Task TriggerYtDlpSelfUpdateAsync()
+        {
+            if (_isUpdating)
+                return;
+
+            _isUpdating = true;
+            buttonUpdateYtDlp.Enabled = false;
+            buttonUpdateYtDlp.Text = "Updating...";
+            buttonCancel.Enabled = false;
+
+            boxOutput.AppendText($"{Environment.NewLine}{Environment.NewLine}========================================================");
+            boxOutput.AppendText($"{Environment.NewLine}[UPDATE] Starting yt-dlp self-update: yt-dlp.exe -U");
+            boxOutput.AppendText($"{Environment.NewLine}========================================================");
+
+            progressBar.Style = ProgressBarStyle.Marquee;
+            taskbarManager.SetProgressState(TaskbarProgressBarState.Indeterminate);
+
+            try
+            {
+                var result = await UpdateBinaries.RunSelfUpdateAsync((line) =>
+                {
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        boxOutput.InvokeIfRequired(() =>
+                        {
+                            boxOutput.AppendText(Environment.NewLine + "[yt-dlp] " + line);
+                        });
+                    }
+                });
+
+                boxOutput.AppendText($"{Environment.NewLine}--------------------------------------------------------");
+                if (result.Success)
+                {
+                    boxOutput.AppendText($"{Environment.NewLine}[UPDATE SUCCESS] {result.Message}");
+                    boxOutput.AppendText($"{Environment.NewLine}yt-dlp is now updated. You can close this window and retry downloading.");
+                    pictureStatus.BackgroundImage = StatusImages.Images["Success"];
+                    taskbarManager.SetProgressState(TaskbarProgressBarState.Normal);
+                    MessageBox.Show(this,
+                        $"yt-dlp update completed!\n\n{result.Message}\n\nYou can now retry downloading your video.",
+                        "yt-dlp Update Complete",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+                else
+                {
+                    boxOutput.AppendText($"{Environment.NewLine}[UPDATE NOTICE] {result.Message}");
+                    taskbarManager.SetProgressState(TaskbarProgressBarState.Error);
+                    MessageBox.Show(this,
+                        $"yt-dlp update notice:\n\n{result.Message}",
+                        "Update Notice",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                }
+                boxOutput.AppendText($"{Environment.NewLine}========================================================");
+            }
+            catch (Exception ex)
+            {
+                boxOutput.AppendText($"{Environment.NewLine}[UPDATE ERROR] {ex.Message}");
+            }
+            finally
+            {
+                _isUpdating = false;
+                progressBar.Style = ProgressBarStyle.Blocks;
+                progressBar.Value = 0;
+                taskbarManager.SetProgressState(TaskbarProgressBarState.NoProgress);
+                buttonUpdateYtDlp.Text = "Update yt-dlp";
+                buttonUpdateYtDlp.Enabled = true;
+                buttonCancel.Enabled = true;
+            }
         }
 
         private void MoveNewFile()
@@ -152,17 +284,32 @@ namespace WebMConverter.Dialogs
                     break;
                 }
             }
-            string finalFile = Path.Combine(OutputPath, Outfile);
-            while (File.Exists(finalFile))
+
+            string targetDir = string.IsNullOrWhiteSpace(OutputPath) ? Environment.CurrentDirectory : OutputPath;
+            string fileNameOnly = Path.GetFileName(Outfile);
+            string fullSource = Path.GetFullPath(Outfile);
+            string finalFile = Path.Combine(targetDir, fileNameOnly);
+
+            if (!fullSource.Equals(Path.GetFullPath(finalFile), StringComparison.OrdinalIgnoreCase))
             {
-                finalFile = Utility.IncreaseFileNumber(finalFile);
+                while (File.Exists(finalFile))
+                {
+                    finalFile = Utility.IncreaseFileNumber(finalFile);
+                }
+                File.Move(fullSource, finalFile);
             }
-            File.Move(Outfile, finalFile);
             Outfile = Path.GetFileName(finalFile);
+            OutputPath = targetDir;
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
         {
+            if (_isUpdating)
+            {
+                MessageBox.Show(this, "yt-dlp is currently updating. Please wait until it completes.", "Update in progress", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             if (buttonCancel.Text.Equals("Close"))
             {
                 if(!_downloaderProcess.HasExited)
@@ -206,7 +353,8 @@ namespace WebMConverter.Dialogs
             if (String.IsNullOrEmpty(Outfile))
                 return String.Empty;
 
-            return Path.Combine(OutputPath, Outfile);
+            string targetDir = string.IsNullOrWhiteSpace(OutputPath) ? Environment.CurrentDirectory : OutputPath;
+            return Path.Combine(targetDir, Outfile);
         }
     }
 }

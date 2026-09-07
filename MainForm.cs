@@ -219,7 +219,7 @@ namespace WebMConverter
                 configuration.AppSettings.Settings.Add("MP4Codec", "0");
 
             if (!configuration.AppSettings.Settings.AllKeys.Contains("YTDLV"))
-                configuration.AppSettings.Settings.Add("YTDLV", "20210505");
+                configuration.AppSettings.Settings.Add("YTDLV", UpdateBinaries.GetInstalledVersion() ?? "2026.08.19");
 
             if (!configuration.AppSettings.Settings.AllKeys.Contains("POP"))
                 configuration.AppSettings.Settings.Add("POP", "False");
@@ -534,14 +534,15 @@ namespace WebMConverter
             SendMessage(textBoxIn.Handle, EM_SETCUEBANNER, 0, "Paste URL here if you want to download a video, to download just a part add @*start_time-end_time e.g. URL@*5:35-5:45");
             
             this.ActiveControl = buttonBrowseIn;
-            // Disabled automatic updates to prevent overriding GPU-compatible binaries
+            // Disabled automatic update popups on startup to prevent overriding GPU-compatible binaries
+            // and prevent annoying blocking pop-up windows. Users can update yt-dlp anytime from Settings/General tab.
         }
 
         private void CheckUpdateBinaries()
         {
             if (IsConnectedToInternet())
             {
-                string installedVersion = configuration.AppSettings.Settings["YTDLV"].Value;
+                string installedVersion = configuration.AppSettings.Settings["YTDLV"]?.Value ?? UpdateBinaries.GetInstalledVersion();
                 UpdateBinaries updateBinaries = new UpdateBinaries(installedVersion);
                 updateBinaries.GetLatestVersion();
             }
@@ -3258,6 +3259,14 @@ namespace WebMConverter
         {
             UpdateConfiguration("DisableUpdates", boxDisableUpdates.Checked.ToString());
             Program.DisableUpdates = boxDisableUpdates.Checked;
+        }
+
+        private void buttonUpdateYtDlp_Click(object sender, EventArgs e)
+        {
+            using (var updater = new UpdateBinaries())
+            {
+                updater.ShowDialog(this);
+            }
         }
 
         private void boxDisableExtractSubtitles_CheckedChanged(object sender, EventArgs e)

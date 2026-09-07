@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -16,6 +16,7 @@ namespace WebMConverter.Dialogs
         public string OutputPath { get; set; }
 
         private readonly string _infile;
+        private readonly string _options;
         private YoutubeDL _downloaderProcess;
 
         private Timer _timer;
@@ -29,7 +30,19 @@ namespace WebMConverter.Dialogs
             InitializeComponent();
             pictureStatus.BackgroundImage = StatusImages.Images["Happening"];
 
-            _infile = '"' + url.Replace(@"""", @"\""") + '"';
+            string actualUrl = url;
+            if (url.Contains('@'))
+            {
+                var parts = url.Split(new[] { '@' }, 2);
+                actualUrl = parts[0];
+                _options = String.IsNullOrEmpty(parts[1]) ? String.Empty : $" --download-sections \"{parts[1]}\"";
+            }
+            else
+            {
+                _options = String.Empty;
+            }
+
+            _infile = '"' + actualUrl.Replace(@"""", @"\""") + '"';
             OutputPath = outputPath;
 
             taskbarManager = TaskbarManager.Instance;
@@ -90,7 +103,10 @@ namespace WebMConverter.Dialogs
             boxOutput.AppendText($"{Environment.NewLine}Starting Process");
             _downloaderProcess = new YoutubeDL(null);
             
-            _downloaderProcess.StartInfo.Arguments = $@" --list-formats {_infile}";
+            if (_infile.IndexOf("youtu", StringComparison.OrdinalIgnoreCase) >= 0)
+                _downloaderProcess.StartInfo.Arguments = $@"--list-formats --extractor-args ""youtube:player_client=android,web"" --compat-options no-youtube-unavailable-videos {_infile}";
+            else
+                _downloaderProcess.StartInfo.Arguments = $@"--list-formats {_infile}";
 
             _downloaderProcess.ErrorDataReceived += ProcessOnErrorDataReceived;
             _downloaderProcess.OutputDataReceived += ProcessOnOutputDataReceived;
@@ -115,11 +131,54 @@ namespace WebMConverter.Dialogs
 
             if (_downloaderProcess.ExitCode != 0)
             {
+                string outputText = boxOutput.Text ?? string.Empty;
+                bool isForbidden = outputText.IndexOf("403", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                   outputText.IndexOf("Forbidden", StringComparison.OrdinalIgnoreCase) >= 0;
+                bool isBotOrSign = outputText.IndexOf("bot", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                   outputText.IndexOf("Sign in", StringComparison.OrdinalIgnoreCase) >= 0;
+                bool isExtractor = outputText.IndexOf("extractor", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                   outputText.IndexOf("Unable to extract", StringComparison.OrdinalIgnoreCase) >= 0;
+
                 boxOutput.AppendText($"{Environment.NewLine}{Environment.NewLine}{Program.yt_dl} exited with exit code {_downloaderProcess.ExitCode}. That's usually bad.");
-                boxOutput.AppendText($"{Environment.NewLine}If you have no idea what went wrong, open an issue on Github and copy paste the output of this window there.");
+                boxOutput.AppendText($"{Environment.NewLine}--------------------------------------------------------------------------------");
+                boxOutput.AppendText($"{Environment.NewLine}[ERROR DIAGNOSIS]");
+                if (isForbidden)
+                    boxOutput.AppendText($"{Environment.NewLine}• HTTP 403 Forbidden detected: YouTube has rejected request signatures.");
+                else if (isBotOrSign)
+                    boxOutput.AppendText($"{Environment.NewLine}• Anti-bot verification or sign-in requirement detected from YouTube.");
+                else if (isExtractor)
+                    boxOutput.AppendText($"{Environment.NewLine}• Stream extractor failure: YouTube player JavaScript format has changed.");
+                else
+                    boxOutput.AppendText($"{Environment.NewLine}• Download failed with exit code {_downloaderProcess.ExitCode}.");
+
+                boxOutput.AppendText($"{Environment.NewLine}{Environment.NewLine}Actionable Steps to Resolve:");
+                boxOutput.AppendText($"{Environment.NewLine}1. Update yt-dlp to the latest release (yt-dlp.exe -U) from Settings / General tab or via prompt.");
+                boxOutput.AppendText($"{Environment.NewLine}2. If YouTube requires account verification, supply cookies or check the video in a browser.");
+                boxOutput.AppendText($"{Environment.NewLine}3. Once updated, close this window and retry downloading the video.");
+                boxOutput.AppendText($"{Environment.NewLine}--------------------------------------------------------------------------------{Environment.NewLine}");
+
                 pictureStatus.BackgroundImage = StatusImages.Images["Failure"];
                 buttonCancel.Enabled = true;
                 taskbarManager.SetProgressState(TaskbarProgressBarState.Error);
+
+                if (isForbidden || _downloaderProcess.ExitCode == 1)
+                {
+                    var promptResult = MessageBox.Show(this,
+                        $"yt-dlp failed (Exit code {_downloaderProcess.ExitCode}" + (isForbidden ? " - HTTP 403 Forbidden" : "") + ").\n\n" +
+                        "YouTube frequently changes its player API and anti-bot verification.\n\n" +
+                        "Would you like to run 'yt-dlp -U' now to update yt-dlp to the latest release?",
+                        "YouTube API Error - Update yt-dlp?",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Warning);
+
+                    if (promptResult == DialogResult.Yes)
+                    {
+                        using (var updater = new UpdateBinaries())
+                        {
+                            updater.ShowDialog(this);
+                        }
+                    }
+                }
             }
             else
             {
@@ -156,7 +215,22 @@ namespace WebMConverter.Dialogs
                     break;
                 }
             }
-            File.Move(Outfile, Path.Combine(OutputPath, Outfile));
+
+            string targetDir = string.IsNullOrWhiteSpace(OutputPath) ? Environment.CurrentDirectory : OutputPath;
+            string fileNameOnly = Path.GetFileName(Outfile);
+            string fullSource = Path.GetFullPath(Outfile);
+            string finalFile = Path.Combine(targetDir, fileNameOnly);
+
+            if (!fullSource.Equals(Path.GetFullPath(finalFile), StringComparison.OrdinalIgnoreCase))
+            {
+                while (File.Exists(finalFile))
+                {
+                    finalFile = Utility.IncreaseFileNumber(finalFile);
+                }
+                File.Move(fullSource, finalFile);
+            }
+            Outfile = Path.GetFileName(finalFile);
+            OutputPath = targetDir;
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
@@ -201,7 +275,18 @@ namespace WebMConverter.Dialogs
             {
                 boxOutput.AppendText($"{Environment.NewLine}Starting Process");
                 _downloaderProcess = new YoutubeDL(null);
-                _downloaderProcess.StartInfo.Arguments = $@"-f {txtFormatNumber.Text}  {_infile}";
+
+                string format = txtFormatNumber.Text.Trim();
+                if (!format.StartsWith("\"") && format.Contains(" "))
+                {
+                    format = $"\"{format}\"";
+                }
+
+                if (_infile.IndexOf("youtu", StringComparison.OrdinalIgnoreCase) >= 0)
+                    _downloaderProcess.StartInfo.Arguments = $@"-f {format} --no-mtime --extractor-args ""youtube:player_client=android,web"" --compat-options no-youtube-unavailable-videos {_infile}{_options}".Trim();
+                else
+                    _downloaderProcess.StartInfo.Arguments = $@"-f {format} --no-mtime {_infile}{_options}".Trim();
+
                 _downloaderProcess.ErrorDataReceived += ProcessOnErrorDataReceived;
                 _downloaderProcess.OutputDataReceived += ProcessOnOutputDataReceived;
                 _downloaderProcess.Exited += (o, args) => boxOutput.Invoke((Action)(() =>
@@ -233,7 +318,8 @@ namespace WebMConverter.Dialogs
             if (String.IsNullOrEmpty(Outfile))
                 return String.Empty;
 
-            return OutputPath + Outfile.Substring(1);
+            string targetDir = string.IsNullOrWhiteSpace(OutputPath) ? Environment.CurrentDirectory : OutputPath;
+            return Path.Combine(targetDir, Outfile);
         }
     }
 }

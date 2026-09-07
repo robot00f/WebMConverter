@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 
@@ -22,7 +22,7 @@ namespace WebMConverter
             FFmpegPath = Path.Combine(Environment.CurrentDirectory, "Binaries", folder, "ffmpeg.exe");
 
             StartInfo.FileName = FFmpegPath;
-            StartInfo.Arguments = "-hide_banner " + argument;
+            StartInfo.Arguments = "-hide_banner -nostdin " + argument;
             StartInfo.RedirectStandardInput = true;
             StartInfo.RedirectStandardOutput = true;
             StartInfo.RedirectStandardError = true;

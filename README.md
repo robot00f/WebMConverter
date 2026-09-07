@@ -1,26 +1,37 @@
-WebM for Lazys 
+WebM for Lazys (GPU & Modern Edition)
 =============
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/ab09accc7a9c478badac99fed7ca52cf)](https://www.codacy.com/gh/argorar/WebMConverter/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=argorar/WebMConverter&amp;utm_campaign=Badge_Grade)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Downloads](https://img.shields.io/github/downloads/argorar/WebMConverter/total.svg)]()
-[![CodeLines](https://tokei.rs/b1/github/argorar/WebMConverter)]()
+[![GitHub Release](https://img.shields.io/github/v/release/robot00f/WebMConverter?color=blue)](https://github.com/robot00f/WebMConverter/releases/latest)
 
-Don't forget to give a star in Github. If you want to support this project [https://paypal.me/argorar](https://paypal.me/argorar).
+A modernized wrapper around FFmpeg and AviSynth made for converting, cutting, and optimizing videos to WebM and MP4 without dealing with the command line. Fork of [argorar/WebMConverter](https://github.com/argorar/WebMConverter) and [nixx/WebMConverter](https://gitgud.io/nixx/WebMConverter).
 
-<a href='https://ko-fi.com/argorar' target='_blank'><img height='35' style='border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a> 
+- **Download the latest release [here][LatestDownload].**
 
-A wrapper around ffmpeg and AviSynth made for converting videos to WebM without having to use the command line, fork of [this project](https://gitgud.io/nixx/WebMConverter#webm-for-retards-).
+---
 
-- **Download it [here][LatestDownload].**
+### ✨ Fork Features & Modern Improvements
+
+* 🚀 **Migrated to .NET 8.0 (Windows)**: Upgraded from legacy .NET Framework 4.8 for better performance, stability, and full compatibility with modern Windows 10/11.
+* ⚡ **NVIDIA GPU Acceleration (NVENC)**: Full hardware acceleration for H.264 (`h264_nvenc`) and HEVC/H.265 (`hevc_nvenc`) encoding. Blazing-fast renders using your NVIDIA graphics card.
+* 🎯 **Smart 10 MB & 20 MB Target Size Presets (Discord & Messaging)**:
+  - Instant one-click `[ 10 MB ]` and `[ 20 MB ]` buttons right in the encoding settings.
+  - **No more cut-off video ends**: Eliminated the harsh `-fs` byte truncation cutoff. Replaced with an intelligent 4.5% safety bitrate budget and FFmpeg VBV buffer limits (`-maxrate:v`, `-bufsize:v`). Your videos play completely from start to finish without getting cut in the last seconds.
+* ⏩ **Web FastStart (`-movflags +faststart`)**: Automatically places the MP4 `moov` atom at the beginning of the file so exported videos stream and play instantly on Discord, Telegram, Twitter/X, and web browsers without downloading the entire file first.
+* 📺 **YouTube Downloader (HTTP 403 Forbidden Fix & In-App Updater)**:
+  - Upgraded built-in `yt-dlp` to modern builds (v2026.08.19+).
+  - Integrated anti-bot extractor bypass (`--extractor-args "youtube:player_client=android,web"`) to prevent YouTube HTTP 403 blocks.
+  - Added an **Update yt-dlp** button directly in the Settings / General tab for easy one-click updates.
+* 🪟 **Resizable UI Window**: Main window is now freely resizable (`Sizable`) with an expanded default layout (1550px) designed for modern high-resolution displays.
+* 🔇 **Clean FFmpeg Encoding Logs**: Passes `-nostdin` to FFmpeg, preventing interactive console prompts (`Enter command...`) and `Parse error` spam from cluttering the log output.
+* ⚙️ **Optimized Defaults**: Pre-configured out of the box with MP4 export, Audio enabled, OnlyFFmpeg enabled, and NVIDIA NVENC selected.
+
+---
 
 _Important to know:_
-* **Requires .NET 8.0 (Windows)** (Upgraded from .NET Framework 4.8)
-* Requires [AviSynth][AviSynth] (2.6.0, 32-bit)
-* Already includes a compatible static build of FFmpeg
+* **Requires .NET 8.0 Desktop Runtime (Windows)**
+* Optional: [AviSynth][AviSynth] (2.6.0, 32-bit) for advanced AviSynth filters (or use **Only FFmpeg** mode to encode without AviSynth installed!)
+* Already includes a compatible static build of FFmpeg and yt-dlp
 * Only works on Windows
-* **GPU Hardware Acceleration (NVIDIA NVENC)**: Fully supported for H.264 and H.265 MP4 exports without crashes.
-* **Single-Pass GPU Encoding**: Fixed the `-crf` argument and two-pass crashes when hardware acceleration is selected.
-* **Automatic Updates Disabled**: Keeps your custom GPU-compatible local configuration intact.
 
 ## About WebM
 
@@ -235,9 +246,33 @@ Drag and drop two or more video files inside the application, select what do you
 
 ## Changelog
 
+### 🌟 Modern Fork Releases (robot00f)
+
+#### Version 1.0.6
+* **Clean Encoding Logs**: Pass `-nostdin` to FFmpeg process arguments to eliminate interactive console prompt spam (`Enter command: <target> <time>` / `Parse error`).
+* **YouTube 403 Forbidden Fix**: Enhanced yt-dlp arguments with `--extractor-args "youtube:player_client=android,web"` and `-f "bestvideo*+bestaudio/best"` to bypass YouTube bot blocking and stream download errors.
+* **In-App yt-dlp Updater**: Added an `Update yt-dlp` button in General Settings to automatically update yt-dlp to the latest release on demand.
+
+#### Version 1.0.5
+* **Discord & Messaging Size Presets**: Added `[ 10 MB ]` and `[ 20 MB ]` target size buttons in the Video Encoding tab.
+* **End-of-Video Cutoff Eliminated**: Removed the legacy hard `-fs` byte cutoff that abruptly truncated the end of videos. Implemented an automatic 4.5% safety bitrate budget and FFmpeg VBV buffer limits (`-maxrate:v`, `-bufsize:v`) so videos finish completely within the file size limit.
+* **FastStart Web Playback**: Automatically applies `-movflags +faststart` to MP4 exports, moving the `moov` atom to the file header so videos start playing immediately on Discord, Telegram, and web browsers.
+* **Resizable Window**: Main interface is now freely resizable (`Sizable`) with a wide default layout (1550px) for modern displays.
+* **Modern Defaults**: Default configuration set to MP4, Audio enabled, OnlyFFmpeg enabled, and NVIDIA NVENC selected.
+
+#### Version 1.0.0 – 1.0.4
+* **.NET 8.0 Windows Migration**: Migrated entire solution from legacy .NET Framework 4.8 to .NET 8.0.
+* **NVIDIA NVENC GPU Acceleration**: Full hardware-accelerated encoding for H.264 (`h264_nvenc`) and HEVC (`hevc_nvenc`).
+* **Single-Pass GPU VBR/CQ**: Fixed `-crf` crash and multi-pass incompatibility when hardware acceleration is active.
+* **Automated CI/CD**: Added GitHub Actions build workflow to automatically compile and publish zipped releases.
+
+---
+
+### Upstream Releases (argorar)
+
 #### Version 3.44.2
 * Fix generation of output file to detect if exist when load the file [issue](https://github.com/argorar/WebMConverter/issues/115)
-* **Announcement** This project will be frozen and will not receive any further updates. LazyConverter for macOS will continue in development
+* **Announcement** Original repository frozen by argorar.
 
 #### Version 3.44.1
 * This release is to announce a new software, do you have a mac and want to convert videos in a simple way? Try [LazyConverter](https://github.com/argorar/LazyConverter)
@@ -315,21 +350,19 @@ Drag and drop two or more video files inside the application, select what do you
 * Add option after convert *Create another*, this will change the output file to -2, -3,.., -n
 * Fix filenames when you download many clips from the same file using @* introduced in 3.32.0
 
-Special thanks to this month supporters:
-* new top supporter **Chibi** ❤︎
+Special thanks to original monthly supporters:
+* top supporter **Chibi** ❤︎
 
 
 To see more [changelog](CHANGELOG.md).
-
-<a href='https://ko-fi.com/argorar' target='_blank'><img height='35' style='border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a> 
 
 ## License
 This software is released under the MIT license.
 
 
- [LatestDownload]: https://github.com/argorar/WebMConverter/releases/latest
- [DotNet45]: https://www.microsoft.com/en-us/download/details.aspx?id=30653
+ [LatestDownload]: https://github.com/robot00f/WebMConverter/releases/latest
+ [DotNet8]: https://dotnet.microsoft.com/en-us/download/dotnet/8.0
  [AviSynth]: http://avisynth.nl/index.php/Main_Page#Official_builds
- [NewIssue]: https://github.com/argorar/WebMConverter/issues
- [Sites]: https://ytdl-org.github.io/youtube-dl/supportedsites.html
+ [NewIssue]: https://github.com/robot00f/WebMConverter/issues
+ [Sites]: https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md
  [FAQ]: https://www.webmproject.org/about/faq/

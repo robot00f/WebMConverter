@@ -16,10 +16,10 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@4d463d4ec7977e71359d6674c4cf8256a7980d36 # v4.0.0
       with:
         dotnet-version: '8.0.x'
 
@@ -35,7 +35,7 @@ jobs:
       shell: cmd
 
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
       if: github.ref == 'refs/heads/master'
       with:
         tag_name: v1.0.${{ github.run_number }}

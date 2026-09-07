@@ -106,9 +106,6 @@ namespace WebMConverter
         private string _autoTitle;
         private string _autoArguments;
         private bool _argumentError;
-        private readonly string client_id = "2_yqoPwt";
-        private readonly string client_secret = "ueECdMt4wIn6L7TybyqcUaTXbcZ2pBcs-EERURkI5ey00p6KxHYWmXLs8h6Mr7Lv";
-        private readonly string prefixe = "http://127.0.0.1:57585/";
         public static readonly string VersionUrl = $"https://argorar.github.io/WebMConverter/NewUpdate/latest";
         private readonly Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
         private const int EM_SETCUEBANNER = 0x1501;
@@ -622,7 +619,15 @@ namespace WebMConverter
                         var result = new UpdateNotifyDialog(latestVersion).ShowDialog(this);
                         if (result == DialogResult.Yes)
                         {
-                            System.Diagnostics.Process.Start(checker.UpdaterPath, @"update");
+                            string updaterExe = Path.GetFullPath(checker.UpdaterPath);
+                            var psi = new ProcessStartInfo
+                            {
+                                FileName = updaterExe,
+                                Arguments = "update",
+                                WorkingDirectory = Path.GetDirectoryName(updaterExe),
+                                UseShellExecute = false
+                            };
+                            Process.Start(psi);
                             Application.Exit();
                         }
                     });
@@ -815,20 +820,20 @@ namespace WebMConverter
 
         void buttonBrowseOut_Click(object sender, EventArgs e)
         {
-            using (var dialog = new SaveFileDialog())
+            using (var saveFileDialog = new SaveFileDialog())
             {
                 string format = checkMP4.Checked ? ".mp4" : ".webm";
-                dialog.OverwritePrompt = true;
-                dialog.ValidateNames = true;
-                dialog.Filter = $"WebM files|*{format}";
-                dialog.InitialDirectory = Properties.Settings.Default.RememberedFolderOut;
-                dialog.FileName = Path.ChangeExtension(Path.GetFileName(Program.InputFile), format);
+                saveFileDialog.OverwritePrompt = true;
+                saveFileDialog.ValidateNames = true;
+                saveFileDialog.Filter = $"WebM files|*{format}";
+                saveFileDialog.InitialDirectory = Properties.Settings.Default.RememberedFolderOut;
+                saveFileDialog.FileName = Path.ChangeExtension(Path.GetFileName(Program.InputFile), format);
 
-                if (dialog.ShowDialog(this) != DialogResult.OK || string.IsNullOrWhiteSpace(dialog.FileName))
+                if (saveFileDialog.ShowDialog(this) != DialogResult.OK || string.IsNullOrWhiteSpace(saveFileDialog.FileName))
                     return;
 
-                textBoxOut.Text = dialog.FileName;
-                Properties.Settings.Default.RememberedFolderOut = Path.GetDirectoryName(dialog.FileName);
+                textBoxOut.Text = saveFileDialog.FileName;
+                Properties.Settings.Default.RememberedFolderOut = Path.GetDirectoryName(saveFileDialog.FileName);
                 Properties.Settings.Default.Save();
             }
         }
@@ -1115,17 +1120,19 @@ namespace WebMConverter
 
         void buttonExportProcessing_Click(object sender, EventArgs e)
         {
-            var dialog = new SaveFileDialog();
-            dialog.Filter = "AviSynth script (*.avs)|*.avs";
-            dialog.FileName = Path.GetFileName(Path.ChangeExtension(Program.InputFile, "avs"));
-
-            if (dialog.ShowDialog() == DialogResult.OK)
+            using (var saveFileDialog = new SaveFileDialog())
             {
-                // Generate the script if we're in simple mode
-                if (!boxAdvancedScripting.Checked)
-                    GenerateAvisynthScript();
+                saveFileDialog.Filter = "AviSynth script (*.avs)|*.avs";
+                saveFileDialog.FileName = Path.GetFileName(Path.ChangeExtension(Program.InputFile, "avs"));
 
-                WriteAvisynthScript(dialog.FileName, Program.InputFile);
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Generate the script if we're in simple mode
+                    if (!boxAdvancedScripting.Checked)
+                        GenerateAvisynthScript();
+
+                    WriteAvisynthScript(saveFileDialog.FileName, Program.InputFile);
+                }
             }
         }
 
@@ -2983,7 +2990,7 @@ namespace WebMConverter
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            _ = Process.Start($"https://argorar.github.io/WebMConverter/");
+            _ = Utility.OpenUrl($"https://argorar.github.io/WebMConverter/");
         }
 
         private void boxLoop_CheckedChanged(object sender, EventArgs e)
@@ -3137,7 +3144,7 @@ namespace WebMConverter
         private void buttonOpenPath_Click(object sender, EventArgs e)
         {
             if (!String.IsNullOrEmpty(textPathDownloaded.Text))
-                Process.Start(@textPathDownloaded.Text);
+                Utility.OpenFolder(textPathDownloaded.Text);
         }
 
         private void numericDelay_ValueChanged(object sender, EventArgs e)

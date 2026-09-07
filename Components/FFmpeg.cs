@@ -4,30 +4,33 @@ using System.IO;
 
 namespace WebMConverter
 {
-    class FFmpeg : Process //Refactoring, faggots.
+    class FFmpeg : Process
     {
         public string FFmpegPath;
 
         public FFmpeg(string argument, bool win32 = false)
         {
-            string folder;
-            if (win32)
-                folder = "Win32";
-            else
-                if (Environment.Is64BitOperatingSystem)
-                    folder = "Win64";
-                else
-                    folder = "Win32";
+            string folder = (win32 || !Environment.Is64BitOperatingSystem) ? "Win32" : "Win64";
 
-            FFmpegPath = Path.Combine(Environment.CurrentDirectory, "Binaries", folder, "ffmpeg.exe");
+            string basePath = AppDomain.CurrentDomain.BaseDirectory;
+            string candidate = Path.Combine(basePath, "Binaries", folder, "ffmpeg.exe");
+            if (!File.Exists(candidate))
+            {
+                candidate = Path.Combine(Environment.CurrentDirectory, "Binaries", folder, "ffmpeg.exe");
+            }
+            FFmpegPath = Path.GetFullPath(candidate);
 
             StartInfo.FileName = FFmpegPath;
-            StartInfo.Arguments = "-hide_banner -nostdin " + argument;
+            StartInfo.WorkingDirectory = Path.GetDirectoryName(FFmpegPath);
+
+            string sanitizedArgument = (argument ?? string.Empty).Replace("\r", "").Replace("\n", "").Replace("\0", "");
+            StartInfo.Arguments = "-hide_banner -nostdin " + sanitizedArgument;
+
             StartInfo.RedirectStandardInput = true;
             StartInfo.RedirectStandardOutput = true;
             StartInfo.RedirectStandardError = true;
-            StartInfo.UseShellExecute = false; //Required to redirect IO streams
-            StartInfo.CreateNoWindow = true; //Hide console
+            StartInfo.UseShellExecute = false; // Required to redirect IO streams and prevent shell command execution
+            StartInfo.CreateNoWindow = true; // Hide console
             EnableRaisingEvents = true; 
         }
 

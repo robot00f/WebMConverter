@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 
 namespace WebMConverter.Dialogs
@@ -23,7 +23,7 @@ namespace WebMConverter.Dialogs
 
         void boxReleaseNotes_CheckedChanged(object sender, EventArgs e)
         {
-            System.Diagnostics.Process.Start($"https://argorar.github.io/WebMConverter/#version-{_newVersion}");
+            Utility.OpenUrl($"https://argorar.github.io/WebMConverter/#version-{_newVersion}");
         }
     }
 }

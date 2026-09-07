@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -11,8 +11,20 @@ namespace WebMConverter.Components
 
         public Updater()
         {
-            UpdaterPath = Path.Combine(Environment.CurrentDirectory, "WebMConverter.Updater.exe");
-            string UpdatedUpdaterPath = Path.Combine(Environment.CurrentDirectory, "WebMConverter.Updater.update.exe");
+            string basePath = AppDomain.CurrentDomain.BaseDirectory;
+            string candidate = Path.Combine(basePath, "WebMConverter.Updater.exe");
+            if (!File.Exists(candidate))
+            {
+                candidate = Path.Combine(Environment.CurrentDirectory, "WebMConverter.Updater.exe");
+            }
+            UpdaterPath = Path.GetFullPath(candidate);
+
+            string updateCandidate = Path.Combine(basePath, "WebMConverter.Updater.update.exe");
+            if (!File.Exists(updateCandidate))
+            {
+                updateCandidate = Path.Combine(Environment.CurrentDirectory, "WebMConverter.Updater.update.exe");
+            }
+            string UpdatedUpdaterPath = Path.GetFullPath(updateCandidate);
 
             if (File.Exists(UpdatedUpdaterPath))
             {
@@ -23,11 +35,12 @@ namespace WebMConverter.Components
             }
 
             StartInfo.FileName = UpdaterPath;
+            StartInfo.WorkingDirectory = Path.GetDirectoryName(UpdaterPath);
             StartInfo.RedirectStandardInput = true;
             StartInfo.RedirectStandardOutput = true;
             StartInfo.RedirectStandardError = true;
-            StartInfo.UseShellExecute = false; //Required to redirect IO streams
-            StartInfo.CreateNoWindow = true; //Hide console
+            StartInfo.UseShellExecute = false; // Required to redirect IO streams and prevent shell command execution
+            StartInfo.CreateNoWindow = true; // Hide console
             EnableRaisingEvents = true; 
         }
 
@@ -44,8 +57,23 @@ namespace WebMConverter.Components
             if (!File.Exists(UpdaterPath))
                 return new Tuple<bool, bool, string, string>(false, false, "Updater has been removed.", null);
 
-            currentVersion = currentVersion.Substring(0, currentVersion.LastIndexOf('.'));
-            StartInfo.Arguments = "check " + currentVersion;
+            int lastDot = currentVersion.LastIndexOf('.');
+            if (lastDot > 0)
+            {
+                currentVersion = currentVersion.Substring(0, lastDot);
+            }
+
+            // Sanitize version argument: only allow alphanumeric, dot, hyphen, underscore, plus
+            var sanitizedVersion = new StringBuilder();
+            foreach (char c in (currentVersion ?? string.Empty))
+            {
+                if (char.IsLetterOrDigit(c) || c == '.' || c == '-' || c == '_' || c == '+')
+                {
+                    sanitizedVersion.Append(c);
+                }
+            }
+
+            StartInfo.Arguments = "check " + sanitizedVersion.ToString();
 
             var output = new StringBuilder();
             OutputDataReceived += (sender, args) => output.AppendLine(args.Data);
@@ -63,7 +91,10 @@ namespace WebMConverter.Components
 
             var versionAndChangelog = outputString.Split(new[] { '\n' }, 2);
 
-            return new Tuple<bool, bool, string, string>(true, true, versionAndChangelog[0], versionAndChangelog[0]);
+            string newVersion = versionAndChangelog[0].Trim();
+            string changelog = versionAndChangelog.Length > 1 ? versionAndChangelog[1].Trim() : newVersion;
+
+            return new Tuple<bool, bool, string, string>(true, true, newVersion, changelog);
         }
     }
 }

@@ -35,18 +35,47 @@ namespace WebMConverter.Dialogs
             {
                 var parts = url.Split(new[] { '@' }, 2);
                 actualUrl = parts[0];
-                _options = String.IsNullOrEmpty(parts[1]) ? String.Empty : $" --download-sections \"{parts[1]}\"";
+                string opt = SanitizeInput(parts[1]);
+                _options = String.IsNullOrEmpty(opt) ? String.Empty : $" --download-sections \"{opt.Replace("\"", "\\\"")}\"";
             }
             else
             {
                 _options = String.Empty;
             }
 
-            _infile = '"' + actualUrl.Replace(@"""", @"\""") + '"';
+            string sanitizedUrl = SanitizeInput(actualUrl);
+            _infile = '"' + sanitizedUrl.Replace("\"", "\\\"") + '"';
             OutputPath = outputPath;
 
             taskbarManager = TaskbarManager.Instance;
             buttonLoad.Enabled = false;
+        }
+
+        private static string SanitizeInput(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return string.Empty;
+            return input.Replace("\r", "").Replace("\n", "").Replace("\0", "").Trim();
+        }
+
+        private static string SanitizeFormat(string rawFormat)
+        {
+            if (string.IsNullOrWhiteSpace(rawFormat))
+                return string.Empty;
+
+            var sb = new System.Text.StringBuilder();
+            foreach (char c in rawFormat)
+            {
+                if (char.IsLetterOrDigit(c) || char.IsWhiteSpace(c) ||
+                    c == '+' || c == '/' || c == '-' || c == '_' ||
+                    c == '[' || c == ']' || c == '(' || c == ')' ||
+                    c == ':' || c == '.' || c == ',' || c == '*' ||
+                    c == '?' || c == '=' || c == '!' || c == '<' || c == '>')
+                {
+                    sb.Append(c);
+                }
+            }
+            return sb.ToString().Trim();
         }
 
         private void ProcessOnErrorDataReceived(object sender, DataReceivedEventArgs args)
@@ -104,9 +133,9 @@ namespace WebMConverter.Dialogs
             _downloaderProcess = new YoutubeDL(null);
             
             if (_infile.IndexOf("youtu", StringComparison.OrdinalIgnoreCase) >= 0)
-                _downloaderProcess.StartInfo.Arguments = $@"--list-formats --extractor-args ""youtube:player_client=android,web"" --compat-options no-youtube-unavailable-videos {_infile}";
+                _downloaderProcess.StartInfo.Arguments = $@"--list-formats --extractor-args ""youtube:player_client=android,web"" --compat-options no-youtube-unavailable-videos -- {_infile}";
             else
-                _downloaderProcess.StartInfo.Arguments = $@"--list-formats {_infile}";
+                _downloaderProcess.StartInfo.Arguments = $@"--list-formats -- {_infile}";
 
             _downloaderProcess.ErrorDataReceived += ProcessOnErrorDataReceived;
             _downloaderProcess.OutputDataReceived += ProcessOnOutputDataReceived;
@@ -273,19 +302,20 @@ namespace WebMConverter.Dialogs
             }
             else if (buttonLoad.Text.Equals("Download") && !String.IsNullOrEmpty(txtFormatNumber.Text))
             {
+                string format = SanitizeFormat(txtFormatNumber.Text);
+                if (string.IsNullOrEmpty(format))
+                {
+                    boxOutput.AppendText($"{Environment.NewLine}{Environment.NewLine}Invalid format specified.");
+                    return;
+                }
+
                 boxOutput.AppendText($"{Environment.NewLine}Starting Process");
                 _downloaderProcess = new YoutubeDL(null);
 
-                string format = txtFormatNumber.Text.Trim();
-                if (!format.StartsWith("\"") && format.Contains(" "))
-                {
-                    format = $"\"{format}\"";
-                }
-
                 if (_infile.IndexOf("youtu", StringComparison.OrdinalIgnoreCase) >= 0)
-                    _downloaderProcess.StartInfo.Arguments = $@"-f {format} --no-mtime --extractor-args ""youtube:player_client=android,web"" --compat-options no-youtube-unavailable-videos {_infile}{_options}".Trim();
+                    _downloaderProcess.StartInfo.Arguments = $@"-f ""{format}"" --no-mtime --extractor-args ""youtube:player_client=android,web"" --compat-options no-youtube-unavailable-videos{_options} -- {_infile}".Trim();
                 else
-                    _downloaderProcess.StartInfo.Arguments = $@"-f {format} --no-mtime {_infile}{_options}".Trim();
+                    _downloaderProcess.StartInfo.Arguments = $@"-f ""{format}"" --no-mtime{_options} -- {_infile}".Trim();
 
                 _downloaderProcess.ErrorDataReceived += ProcessOnErrorDataReceived;
                 _downloaderProcess.OutputDataReceived += ProcessOnOutputDataReceived;

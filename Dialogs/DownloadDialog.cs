@@ -39,11 +39,21 @@ namespace WebMConverter.Dialogs
                 options = parts[1];
             }
 
-            _infile = '"' + url.Replace(@"""", @"\""") + '"';
-            _options = String.IsNullOrEmpty(options) ? String.Empty : $" --download-sections \"{options}\" ";
+            string sanitizedUrl = SanitizeInput(url);
+            string sanitizedOptions = SanitizeInput(options);
+
+            _infile = '"' + sanitizedUrl.Replace("\"", "\\\"") + '"';
+            _options = String.IsNullOrEmpty(sanitizedOptions) ? String.Empty : $" --download-sections \"{sanitizedOptions.Replace("\"", "\\\"")}\"";
             OutputPath = outputPath;
 
             taskbarManager = TaskbarManager.Instance;
+        }
+
+        private static string SanitizeInput(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return string.Empty;
+            return input.Replace("\r", "").Replace("\n", "").Replace("\0", "").Trim();
         }
 
         private void ProcessOnErrorDataReceived(object sender, DataReceivedEventArgs args)
@@ -102,9 +112,9 @@ namespace WebMConverter.Dialogs
             _downloaderProcess = new YoutubeDL(null);
 
             if (_infile.IndexOf("youtu", StringComparison.OrdinalIgnoreCase) >= 0)
-                _downloaderProcess.StartInfo.Arguments = $@"-f ""bestvideo*+bestaudio/best"" --no-mtime --extractor-args ""youtube:player_client=android,web"" --compat-options no-youtube-unavailable-videos {_infile}{_options}".Trim();
+                _downloaderProcess.StartInfo.Arguments = $@"-f ""bestvideo*+bestaudio/best"" --no-mtime --extractor-args ""youtube:player_client=android,web"" --compat-options no-youtube-unavailable-videos{_options} -- {_infile}".Trim();
             else
-                _downloaderProcess.StartInfo.Arguments = $@"-f ""bestvideo*+bestaudio/best"" --no-mtime {_infile}{_options}".Trim();
+                _downloaderProcess.StartInfo.Arguments = $@"-f ""bestvideo*+bestaudio/best"" --no-mtime{_options} -- {_infile}".Trim();
 
             _downloaderProcess.ErrorDataReceived += ProcessOnErrorDataReceived;
             _downloaderProcess.OutputDataReceived += ProcessOnOutputDataReceived;

@@ -49,7 +49,7 @@ namespace WebMConverter
         private void SetFile(string audioFileName)
         {
             boxAudioFile.Text = audioFileName;
-            openAudioFile.FileName = audioFileName;
+            openAudioFile.FileName = audioFileName; // OpenFileDialog component selection, distinct from ProcessStartInfo
         }
 
         private void buttonConfirm_Click(object sender, EventArgs e)

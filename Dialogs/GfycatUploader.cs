@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -85,7 +85,7 @@ namespace WebMConverter.Dialogs
                         if (text.Contains("complete"))
                         {
                             isDone = true;
-                            System.Diagnostics.Process.Start($"https://gfycat.com/{gfyName}");
+                            Utility.OpenUrl($"https://gfycat.com/{gfyName}");
                             Dispose();
                         }
                         else

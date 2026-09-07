@@ -635,5 +635,5 @@ v2.0.0
 - Updated ffmpeg, which means that exported WebMs will play in Internet Explorer.
 - Alive!
 
- [AviSynth]: http://avisynth.nl/index.php/Main_Page#Official_builds
- [.NET 4.5]: http://www.microsoft.com/en-us/download/details.aspx?id=30653
+ [AviSynth]: https://avisynth.nl/index.php/Main_Page#Official_builds
+ [.NET 4.5]: https://www.microsoft.com/en-us/download/details.aspx?id=30653

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
@@ -45,7 +45,7 @@ namespace WebMConverter
                 listViewTrims.SelectedItems[0].Remove();
         }
 
-        private void MoveListViewItem(ListView sender, MoveDirection direction) // http://stackoverflow.com/a/11623992
+        private void MoveListViewItem(ListView sender, MoveDirection direction) // https://stackoverflow.com/a/11623992
         {
             int dir = (int)direction;
             var item = sender.SelectedItems[0];

@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -256,25 +256,6 @@ namespace WebMConverter
             return (number / 2) * 2;
         }
 
-        public static string GetWebRequest(string url)
-        {
-            WebRequest httpWRequest = WebRequest.Create(url);
-            httpWRequest.ContentType = "application/json";
-            httpWRequest.Method = "GET";
-            httpWRequest.Headers.Add("Authorization", "Bearer " + Program.token);
-            return new StreamReader(httpWRequest.GetResponse().GetResponseStream()).ReadToEnd();
-        }
-
-        public static string PostWebRequest(string url, string body)
-        {
-            WebRequest httpWRequest = WebRequest.Create(url);
-            httpWRequest.ContentType = "application/json";
-            httpWRequest.Method = "POST";
-            ASCIIEncoding encoding = new ASCIIEncoding();
-            byte[] byte1 = encoding.GetBytes(body);
-            httpWRequest.GetRequestStream().Write(byte1, 0, byte1.Length);
-            return new StreamReader(httpWRequest.GetResponse().GetResponseStream()).ReadToEnd();
-        }
 
         public static string D(double value)
         {
@@ -460,6 +441,75 @@ namespace WebMConverter
             }
             return pathWithPrefix;
         }
+
+        public static bool OpenFile(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+                return false;
+
+            try
+            {
+                var psi = new ProcessStartInfo(filePath)
+                {
+                    UseShellExecute = true
+                };
+                Process.Start(psi);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error opening file '{filePath}': {ex.Message}");
+                return false;
+            }
+        }
+
+        public static bool OpenFolder(string folderPath)
+        {
+            if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath))
+                return false;
+
+            try
+            {
+                var psi = new ProcessStartInfo(folderPath)
+                {
+                    UseShellExecute = true
+                };
+                Process.Start(psi);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error opening folder '{folderPath}': {ex.Message}");
+                return false;
+            }
+        }
+
+        public static bool OpenUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                return false;
+
+            if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri) ||
+                (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+            {
+                return false;
+            }
+
+            try
+            {
+                var psi = new ProcessStartInfo(uri.AbsoluteUri)
+                {
+                    UseShellExecute = true
+                };
+                Process.Start(psi);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error opening URL '{url}': {ex.Message}");
+                return false;
+            }
+        }
     }
 
     public enum FileType
@@ -515,7 +565,7 @@ namespace WebMConverter
 
     public static class Extensions
     {
-        // http://stackoverflow.com/a/12179408/174466
+        // https://stackoverflow.com/a/12179408/174466
         static readonly object[] EmptyObjectArray = new object[0];
         public static void InvokeIfRequired(this System.ComponentModel.ISynchronizeInvoke obj, System.Windows.Forms.MethodInvoker action)
         {

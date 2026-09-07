@@ -362,7 +362,7 @@ This software is released under the MIT license.
 
  [LatestDownload]: https://github.com/robot00f/WebMConverter/releases/latest
  [DotNet8]: https://dotnet.microsoft.com/en-us/download/dotnet/8.0
- [AviSynth]: http://avisynth.nl/index.php/Main_Page#Official_builds
+ [AviSynth]: https://avisynth.nl/index.php/Main_Page#Official_builds
  [NewIssue]: https://github.com/robot00f/WebMConverter/issues
  [Sites]: https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md
  [FAQ]: https://www.webmproject.org/about/faq/

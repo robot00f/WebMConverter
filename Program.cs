@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -95,7 +95,7 @@ namespace WebMConverter
                    $"Failed to load AviSynth: {errorMessage}.{Environment.NewLine}" +
                     "I'll open the download page, go ahead and install it.",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Process.Start($"http://avisynth.nl/index.php/Main_Page#Official_builds");
+                Utility.OpenUrl("https://avisynth.nl/index.php/Main_Page#Official_builds");
                 return;
             }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -168,7 +168,7 @@ namespace WebMConverter
             if (!File.Exists(filename))
                 MessageBox.Show("The image doesn't exist", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             else
-                Process.Start(filename);
+                Utility.OpenFile(filename);
         }
 
         private void labelStart_Click(object sender, EventArgs e)

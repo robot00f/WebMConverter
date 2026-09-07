@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -479,7 +479,7 @@ namespace WebMConverter.Dialogs
             if (!File.Exists(_outfile))
                 MessageBox.Show("Output file not found! Did you move it?", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             else
-                Process.Start(_outfile); //Play result video
+                Utility.OpenFile(_outfile); //Play result video
         }
 
        

@@ -35,20 +35,20 @@ namespace WebMConverter.Dialogs
         {
             string localPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Binaries", "Win64", Program.yt_dl);
             if (File.Exists(localPath))
-                return localPath;
+                return Path.GetFullPath(localPath);
 
             string cwdPath = Path.Combine(Environment.CurrentDirectory, "Binaries", "Win64", Program.yt_dl);
             if (File.Exists(cwdPath))
-                return cwdPath;
+                return Path.GetFullPath(cwdPath);
 
-            return localPath;
+            return Path.GetFullPath(localPath);
         }
 
         public static string GetInstalledVersion()
         {
             try
             {
-                string exePath = GetYtDlpPath();
+                string exePath = Path.GetFullPath(GetYtDlpPath());
                 if (!File.Exists(exePath))
                     return null;
 
@@ -56,6 +56,7 @@ namespace WebMConverter.Dialogs
                 {
                     FileName = exePath,
                     Arguments = "--version",
+                    WorkingDirectory = Path.GetDirectoryName(exePath),
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     CreateNoWindow = true
@@ -68,8 +69,9 @@ namespace WebMConverter.Dialogs
                     return string.IsNullOrEmpty(output) ? null : output;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                /* Process execution or output reading failure ignored safely; returns null */
                 return null;
             }
         }
@@ -90,15 +92,15 @@ namespace WebMConverter.Dialogs
                 config.Save(ConfigurationSaveMode.Modified);
                 ConfigurationManager.RefreshSection("appSettings");
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore configuration save issues
+                /* Configuration save issues ignored safely */
             }
         }
 
         public static async Task<UpdateResult> RunSelfUpdateAsync(Action<string> logCallback = null)
         {
-            string exePath = GetYtDlpPath();
+            string exePath = Path.GetFullPath(GetYtDlpPath());
             bool exists = File.Exists(exePath);
 
             if (exists)
@@ -111,6 +113,7 @@ namespace WebMConverter.Dialogs
                     {
                         FileName = exePath,
                         Arguments = "-U",
+                        WorkingDirectory = Path.GetDirectoryName(exePath),
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
@@ -201,9 +204,23 @@ namespace WebMConverter.Dialogs
                     string backup = targetPath + ".old";
                     if (File.Exists(backup))
                     {
-                        try { File.Delete(backup); } catch { }
+                        try
+                        {
+                            File.Delete(backup);
+                        }
+                        catch (Exception ex)
+                        {
+                            /* File lock or cleanup failure ignored safely */
+                        }
                     }
-                    try { File.Move(targetPath, backup); } catch { }
+                    try
+                    {
+                        File.Move(targetPath, backup);
+                    }
+                    catch (Exception ex)
+                    {
+                        /* File lock or rename failure ignored safely */
+                    }
                 }
 
                 File.Move(tempFile, targetPath);
@@ -235,7 +252,10 @@ namespace WebMConverter.Dialogs
                     if (File.Exists(tempFile))
                         File.Delete(tempFile);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    /* Temporary download file cleanup failure ignored safely */
+                }
             }
         }
 

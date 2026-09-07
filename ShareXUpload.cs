@@ -1,5 +1,7 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
+using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace WebMConverter
 {
@@ -12,11 +14,18 @@ namespace WebMConverter
         {
             var installPath = (string)Registry.GetValue(@"HKEY_CURRENT_USER\Software\Classes\*\shell\ShareX\command", null, null);
             if (installPath == null) return;
-            Enabled = true;
 
             var start = installPath.IndexOf('"') + 1;
             var end = installPath.IndexOf('"', start);
-            InstallPath = installPath.Substring(start, end - start);
+            if (start > 0 && end > start)
+            {
+                string rawPath = installPath.Substring(start, end - start);
+                if (File.Exists(rawPath))
+                {
+                    InstallPath = Path.GetFullPath(rawPath);
+                    Enabled = true;
+                }
+            }
         }
     }
 
@@ -24,10 +33,18 @@ namespace WebMConverter
     {
         public ShareX(string filename)
         {
-            if (!ShareXUpload.Enabled) return;
+            if (!ShareXUpload.Enabled || string.IsNullOrWhiteSpace(ShareXUpload.InstallPath)) return;
 
-            StartInfo.FileName = ShareXUpload.InstallPath;
-            StartInfo.Arguments = $@"""{filename}""";
+            string exePath = Path.GetFullPath(ShareXUpload.InstallPath);
+            if (!File.Exists(exePath)) return;
+
+            StartInfo.FileName = exePath;
+            StartInfo.WorkingDirectory = Path.GetDirectoryName(exePath);
+            StartInfo.UseShellExecute = false;
+            StartInfo.CreateNoWindow = true;
+
+            string sanitizedFile = (filename ?? string.Empty).Replace("\r", "").Replace("\n", "").Replace("\0", "").Replace("\"", "\\\"");
+            StartInfo.Arguments = $@"""{sanitizedFile}""";
         }
     }
 }

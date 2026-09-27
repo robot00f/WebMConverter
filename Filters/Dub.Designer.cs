@@ -1,4 +1,4 @@
-﻿namespace WebMConverter
+namespace WebMConverter
 {
     partial class DubForm
     {
@@ -79,10 +79,10 @@
             tableLayout.Location = new System.Drawing.Point(0, 0);
             tableLayout.Name = "tableLayout";
             tableLayout.RowCount = 3;
-            tableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
-            tableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
-            tableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28F));
-            tableLayout.Size = new System.Drawing.Size(401, 85);
+            tableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33F));
+            tableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33F));
+            tableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.34F));
+            tableLayout.Size = new System.Drawing.Size(460, 115);
             tableLayout.TabIndex = 1;
             // 
             // labelDubModeHint
@@ -174,14 +174,15 @@
             this.panelIndexingProgress.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelIndexingProgress.Location = new System.Drawing.Point(0, 0);
             this.panelIndexingProgress.Name = "panelIndexingProgress";
-            this.panelIndexingProgress.Size = new System.Drawing.Size(401, 85);
+            this.panelIndexingProgress.Size = new System.Drawing.Size(460, 115);
             this.panelIndexingProgress.TabIndex = 0;
+            this.panelIndexingProgress.Visible = false;
             // 
             // progressIndexingProgress
             // 
             this.progressIndexingProgress.Location = new System.Drawing.Point(3, 3);
             this.progressIndexingProgress.Name = "progressIndexingProgress";
-            this.progressIndexingProgress.Size = new System.Drawing.Size(395, 23);
+            this.progressIndexingProgress.Size = new System.Drawing.Size(454, 23);
             this.progressIndexingProgress.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
             this.progressIndexingProgress.TabIndex = 0;
             this.progressIndexingProgress.Value = 30;
@@ -190,7 +191,7 @@
             // 
             this.labelIndexingProgress.Location = new System.Drawing.Point(3, 28);
             this.labelIndexingProgress.Name = "labelIndexingProgress";
-            this.labelIndexingProgress.Size = new System.Drawing.Size(395, 25);
+            this.labelIndexingProgress.Size = new System.Drawing.Size(454, 25);
             this.labelIndexingProgress.TabIndex = 1;
             this.labelIndexingProgress.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
@@ -206,11 +207,13 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(401, 85);
-            this.ControlBox = false;
-            this.Controls.Add(tableLayout);
+            this.ClientSize = new System.Drawing.Size(460, 115);
+            this.ControlBox = true;
             this.Controls.Add(this.panelIndexingProgress);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Controls.Add(tableLayout);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "DubForm";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;

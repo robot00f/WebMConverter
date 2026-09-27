@@ -22,6 +22,7 @@ namespace WebMConverter
         public DubForm()
         {
             InitializeComponent();
+            panelIndexingProgress.Visible = false;
             comboDubMode.SelectedIndex = 0;
         }
 
@@ -59,9 +60,13 @@ namespace WebMConverter
 
             try
             {
-                if (!File.Exists(audioFile))
-                    throw new FileNotFoundException();
+                if (string.IsNullOrWhiteSpace(audioFile) || !File.Exists(audioFile))
+                {
+                    MessageBox.Show(this, "The specified audio file does not exist. Please select a valid audio file.", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
+                panelIndexingProgress.Visible = true;
                 panelIndexingProgress.BringToFront();
                 labelIndexingProgress.Text = "Hashing...";
 
@@ -148,6 +153,7 @@ namespace WebMConverter
                 {
                     this.InvokeIfRequired(() =>
                     {
+                        panelIndexingProgress.Visible = false;
                         panelIndexingProgress.SendToBack();
                     });
 
@@ -190,7 +196,14 @@ namespace WebMConverter
         private void buttonCancel_Click(object sender, EventArgs e)
         {
             if (_worker != null && _worker.IsBusy)
+            {
                 _worker.CancelAsync();
+            }
+            else
+            {
+                DialogResult = DialogResult.Cancel;
+                Close();
+            }
         }
 
         private void comboDubMode_SelectedIndexChanged(object sender, EventArgs e)

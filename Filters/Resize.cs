@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Windows.Forms;
 
@@ -104,24 +104,27 @@ namespace WebMConverter
 
         void ResizeForm_Load(object sender, EventArgs e)
         {
-            FFMSSharp.Frame frame = Program.VideoSource.GetFrame((Filters.Trim == null) ? 0 : Filters.Trim.TrimStart); // the video may have different frame resolutions
+            if (Program.VideoSource != null)
+            {
+                FFMSSharp.Frame frame = Program.VideoSource.GetFrame((Filters.Trim == null) ? 0 : Filters.Trim.TrimStart); // the video may have different frame resolutions
 
-            if (Filters.Crop != null)
-            {
-                inwidth = Filters.Crop.finalWidth;
-                inheight = Filters.Crop.finalHeight;
-            }
-            else if (inwidth == 0 && inheight == 0)
-            {
-                if ((Owner as MainForm).SarCompensate)
+                if (Filters.Crop != null)
                 {
-                    inwidth = (Owner as MainForm).SarWidth;
-                    inheight = (Owner as MainForm).SarHeight;
+                    inwidth = Filters.Crop.finalWidth;
+                    inheight = Filters.Crop.finalHeight;
                 }
-                else
+                else if (inwidth == 0 && inheight == 0)
                 {
-                    inwidth = frame.EncodedResolution.Width;
-                    inheight = frame.EncodedResolution.Height;
+                    if (Owner is MainForm mainForm && mainForm.SarCompensate)
+                    {
+                        inwidth = mainForm.SarWidth;
+                        inheight = mainForm.SarHeight;
+                    }
+                    else if (frame != null)
+                    {
+                        inwidth = frame.EncodedResolution.Width;
+                        inheight = frame.EncodedResolution.Height;
+                    }
                 }
             }
 

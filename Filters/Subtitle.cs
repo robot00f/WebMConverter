@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
@@ -23,7 +23,7 @@ namespace WebMConverter
                     "FYI", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
-            if (Program.SubtitleTracks.Count == 0)
+            if (Program.SubtitleTracks == null || Program.SubtitleTracks.Count == 0)
             {
                 checkBoxInternalSubs.Checked = false;
                 checkBoxInternalSubs.Enabled = false;

@@ -102,14 +102,23 @@ namespace WebMConverter
                         if (format == null)
                             return -1;
 
-                        var duration = Convert.ToDouble(format.GetAttribute("duration", ""), CultureInfo.InvariantCulture);
-                        var startTime = Convert.ToDouble(format.GetAttribute("start_time", ""), CultureInfo.InvariantCulture);
-                        return duration - startTime;
+                        string durationStr = format.GetAttribute("duration", "");
+                        string startTimeStr = format.GetAttribute("start_time", "");
+
+                        double duration = 0;
+                        double startTime = 0;
+
+                        if (!double.TryParse(durationStr, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out duration))
+                            return -1;
+
+                        if (!string.IsNullOrEmpty(startTimeStr))
+                            double.TryParse(startTimeStr, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out startTime);
+
+                        return Math.Max(0, duration - startTime);
                     }
                 }
-                catch (Exception ex)
+                catch
                 {
-                    MessageBox.Show($"Failed to get duration from file. Error: ${ex.Message}\nstreamInfo: ${streamInfo}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     return -1;
                 }
             }

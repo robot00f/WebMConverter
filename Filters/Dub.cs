@@ -151,15 +151,26 @@ namespace WebMConverter
                         {
                             DialogResult = DialogResult.OK;
                             double audioDur = 0;
-                            try { audioDur = Utility.ProbeDuration(audioFile, false); } catch { }
+                            try
+                            {
+                                var probed = Utility.ProbeDuration(audioFile, false);
+                                if (probed > 0)
+                                {
+                                    audioDur = probed;
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                // Probing duration is best-effort; if ffprobe fails, audioDur remains 0 and Avisynth calculates duration dynamically.
+                            }
                             GeneratedFilter = new DubFilter(audioFile, indexFile, (DubMode)comboDubMode.SelectedIndex, audioDur);
                             Close();
                             return;
                         }
                     }
-                    catch
+                    catch (Exception)
                     {
-                        // ignored
+                        // Ignore cache read failures; will re-index below
                     }
 
                     File.Delete(indexFile);
@@ -239,7 +250,18 @@ namespace WebMConverter
                     {
                         DialogResult = DialogResult.OK;
                         double audioDur = 0;
-                        try { audioDur = Utility.ProbeDuration(audioFile, false); } catch { }
+                        try
+                        {
+                            var probed = Utility.ProbeDuration(audioFile, false);
+                            if (probed > 0)
+                            {
+                                audioDur = probed;
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            // Probing duration is best-effort; if ffprobe fails, audioDur remains 0 and Avisynth calculates duration dynamically.
+                        }
                         GeneratedFilter = new DubFilter(audioFile, indexFile, (DubMode)comboDubMode.SelectedIndex, audioDur);
                     }
 

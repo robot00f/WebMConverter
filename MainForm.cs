@@ -408,7 +408,7 @@ namespace WebMConverter
                     case ".wav":
                     case ".mp3":
                     case ".ogg":
-                        using (var form = new DubForm(new DubFilter(files[0], null, DubMode.TrimAudio)))
+                        using (var form = new DubForm(new DubFilter(files[0], null, DubForm.GetDefaultDubMode())))
                         {
                             if (form.ShowDialog(this) != DialogResult.OK) return;
 
@@ -2160,7 +2160,7 @@ namespace WebMConverter
 
         private void SetFPS()
         {
-            int originalFPS = (int)(Program.VideoSource.NumberOfFrames / Program.VideoSource.LastTime);
+            int originalFPS = Program.VideoSource.LastTime > 0 ? (int)(Program.VideoSource.NumberOfFrames / Program.VideoSource.LastTime) : 25;
             Program.originalFraps = originalFPS;
             this.InvokeIfRequired(() =>
             {
@@ -2746,6 +2746,8 @@ namespace WebMConverter
                     duration = Filters.Trim.GetDuration();
                 else if (Filters.MultipleTrim != null)
                     duration = Filters.MultipleTrim.GetDuration();
+                else if (Filters.Dub != null && Filters.Dub.Mode == DubMode.LoopVideo && Filters.Dub.AudioDuration > 0)
+                    duration = Filters.Dub.AudioDuration;
                 else if (Program.VideoSource == null)
                     return -1;
                 else

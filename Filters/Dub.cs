@@ -15,6 +15,11 @@ namespace WebMConverter
 {
     public partial class DubForm : Form
     {
+        private static readonly HashSet<string> ImageExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".jfif", ".jpg", ".jpeg", ".png", ".bmp", ".webp", ".gif", ".ico", ".tiff", ".tif"
+        };
+
         public DubFilter GeneratedFilter { get; set; }
 
         private BackgroundWorker _worker;
@@ -23,13 +28,65 @@ namespace WebMConverter
         {
             InitializeComponent();
             panelIndexingProgress.Visible = false;
-            comboDubMode.SelectedIndex = 0;
+            openAudioFile.Filter = "Audio files (*.mp3;*.wav;*.ogg;*.flac;*.m4a;*.aac;*.opus;*.wma)|*.mp3;*.wav;*.ogg;*.flac;*.m4a;*.aac;*.opus;*.wma|All files (*.*)|*.*";
+            comboDubMode.SelectedIndex = (int)GetDefaultDubMode();
         }
 
         public DubForm(DubFilter dubFilter) : this()
         {
             SetFile(dubFilter.AudioFileName);
-            comboDubMode.SelectedIndex = (int)dubFilter.Mode;
+            if (dubFilter.IndexFileName != null)
+            {
+                comboDubMode.SelectedIndex = (int)dubFilter.Mode;
+            }
+        }
+
+        public static DubMode GetDefaultDubMode()
+        {
+            if (!string.IsNullOrEmpty(Program.InputFile))
+            {
+                try
+                {
+                    var ext = Path.GetExtension(Program.InputFile);
+                    if (!string.IsNullOrEmpty(ext) && ImageExtensions.Contains(ext))
+                    {
+                        return DubMode.LoopVideo;
+                    }
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+
+            if (Program.VideoSource != null)
+            {
+                if (Program.VideoSource.NumberOfFrames <= 2)
+                {
+                    return DubMode.LoopVideo;
+                }
+
+                try
+                {
+                    if (Program.VideoSource.NumberOfFrames > 0)
+                    {
+                        var duration = Utility.FrameToTimeSpan(Program.VideoSource.NumberOfFrames - 1).TotalSeconds;
+                        if (duration <= 1.0)
+                        {
+                            return DubMode.LoopVideo;
+                        }
+                    }
+                }
+                catch
+                {
+                    if (Program.VideoSource.LastTime <= 1.0)
+                    {
+                        return DubMode.LoopVideo;
+                    }
+                }
+            }
+
+            return DubMode.TrimAudio;
         }
 
         private void DubForm_DragEnter(object sender, DragEventArgs e)
@@ -41,7 +98,8 @@ namespace WebMConverter
         private void DubForm_DragDrop(object sender, DragEventArgs e)
         {
             var files = (string[]) e.Data.GetData(DataFormats.FileDrop);
-            SetFile(files[0]);
+            if (files != null && files.Length > 0)
+                SetFile(files[0]);
         }
 
         private void buttonBrowse_Click(object sender, EventArgs e) => openAudioFile.ShowDialog(this);
@@ -92,7 +150,9 @@ namespace WebMConverter
                         if (index.BelongsToFile(audioFile))
                         {
                             DialogResult = DialogResult.OK;
-                            GeneratedFilter = new DubFilter(audioFile, indexFile, (DubMode)comboDubMode.SelectedIndex);
+                            double audioDur = 0;
+                            try { audioDur = Utility.ProbeDuration(audioFile, false); } catch { }
+                            GeneratedFilter = new DubFilter(audioFile, indexFile, (DubMode)comboDubMode.SelectedIndex, audioDur);
                             Close();
                             return;
                         }
@@ -178,7 +238,9 @@ namespace WebMConverter
                     else
                     {
                         DialogResult = DialogResult.OK;
-                        GeneratedFilter = new DubFilter(audioFile, indexFile, (DubMode)comboDubMode.SelectedIndex);
+                        double audioDur = 0;
+                        try { audioDur = Utility.ProbeDuration(audioFile, false); } catch { }
+                        GeneratedFilter = new DubFilter(audioFile, indexFile, (DubMode)comboDubMode.SelectedIndex, audioDur);
                     }
 
                     this.InvokeIfRequired(Close);
@@ -230,12 +292,14 @@ namespace WebMConverter
         public string AudioFileName { get; }
         public string IndexFileName { get; }
         public DubMode Mode { get; }
+        public double AudioDuration { get; }
 
-        public DubFilter(string audioFileName, string indexFileName, DubMode mode)
+        public DubFilter(string audioFileName, string indexFileName, DubMode mode, double audioDuration = 0)
         {
             AudioFileName = audioFileName;
             IndexFileName = indexFileName;
             Mode = mode;
+            AudioDuration = audioDuration;
         }
 
         public override string ToString()
@@ -243,10 +307,10 @@ namespace WebMConverter
             switch (Mode)
             {
                 case DubMode.TrimAudio:
-                    return $@"Trim(AudioDub(FFAudioSource(""{AudioFileName}"",cachefile=""{IndexFileName}"")), 0, last.FrameCount)";
+                    return $@"Trim(AudioDub(FFAudioSource(""{AudioFileName}"",cachefile=""{IndexFileName}"")), 0, length=last.FrameCount)";
                 case DubMode.LoopVideo:
                     return $@"dub = FFAudioSource(""{AudioFileName}"",cachefile=""{IndexFileName}""){Environment.NewLine}" + 
-                             "Loop(-1).AudioDub(dub).Trim(0,int(dub.AudioLength / dub.AudioRate * last.FrameRate))";
+                             "Loop(-1).AudioDub(dub).Trim(0, length=Max(1, Ceil(dub.AudioDuration * last.FrameRate)))";
                 case DubMode.JustDub:
                     return $@"AudioDub(FFAudioSource(""{AudioFileName}"",cachefile=""{IndexFileName}""))";
                 default:

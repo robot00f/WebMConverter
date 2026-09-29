@@ -139,7 +139,7 @@ namespace WebMConverter.Dialogs
                 argument = _arguments[0];
             }
 
-            _induration = ProbeDuration(_infile, true);
+            _induration = ProbeDuration(_infile, _infile.EndsWith(".avs", StringComparison.OrdinalIgnoreCase));
 
             if (_twopass)
             {
